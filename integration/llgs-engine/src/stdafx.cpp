@@ -1,6 +1,8 @@
-// stdafx.cpp : source file that includes just the standard includes
-// llgs-engine.pch will be the pre-compiled header
-// stdafx.obj will contain the pre-compiled type information
+// llgs-engine
+// Copyright (c) 2013 Kalman Kiss, Zalaegerszeg Hungary
+// All rights reserved.
+// kiskami@freemail.hu
+//
 
 #include "stdafx.h"
 

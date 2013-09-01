@@ -1,3 +1,8 @@
+// llgs-engine
+// Copyright (c) 2013 Kalman Kiss, Zalaegerszeg Hungary
+// All rights reserved.
+// kiskami@freemail.hu
+//
 #pragma once
 
 // Including SDKDDKVer.h defines the highest available Windows platform.

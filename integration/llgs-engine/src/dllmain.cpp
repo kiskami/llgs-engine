@@ -1,3 +1,8 @@
+// llgs-engine
+// Copyright (c) 2013 Kalman Kiss, Zalaegerszeg Hungary
+// All rights reserved.
+// kiskami@freemail.hu
+//
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
 
