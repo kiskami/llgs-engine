@@ -49,6 +49,60 @@ void LLGSEngine::r_createscenemanager(char *type, char *name) {
 	}
 }
 
+void *LLGSEngine::r_createcamera(char *name) {
+	if(scenemanager!=0) {
+		return (void *)scenemanager->createCamera(name);
+	}
+	return 0;
+}
+
+void  LLGSEngine::r_setcamerapos(void *camptr, float x, float y, float z) {
+	if(camptr!=0) {
+		((Ogre::Camera *)camptr)->setPosition(Ogre::Vector3(x,y,z));
+	}
+}
+
+void  LLGSEngine::r_cameralookat(void *camptr, float x, float y, float z) {
+	if(camptr!=0) {
+		((Ogre::Camera *)camptr)->lookAt(Ogre::Vector3(x,y,z));
+	}
+}
+
+void  LLGSEngine::r_setcameraneraclipdist(void *camptr, float dist) {
+	if(camptr!=0) {
+		((Ogre::Camera *)camptr)->setNearClipDistance(dist);
+	}
+}
+
+void  LLGSEngine::r_setcameraasviewport(void *camptr) {
+	if(window!=0) {
+		viewport = window->addViewport((Ogre::Camera *)camptr);
+		((Ogre::Camera *)camptr)->setAspectRatio(viewport->getActualWidth()/(float)viewport->getActualHeight());
+	}
+}
+
+void  LLGSEngine::r_setviewportbackground(float r, float g, float b) {
+	viewport->setBackgroundColour(Ogre::ColourValue(r,g,b));
+}
+
+void  LLGSEngine::r_setambientlight(float r, float g, float b) {
+	if(scenemanager!=0) {
+		scenemanager->setAmbientLight(Ogre::ColourValue(r,g,b));
+	}
+}
+
+void  LLGSEngine::r_renderoneframe() {
+	if(root!=0) {
+		Ogre::Root::getSingleton().renderOneFrame();
+	}
+}
+
+void  LLGSEngine::r_setskybox(char *materialname) {
+	if(scenemanager!=0) {
+		scenemanager->setSkyBox(true,materialname);
+	}
+}
+
 void LLGSEngine::r_screenshottofile(char *basename) {
 	if(window!=0) window->writeContentsToTimestampedFile(basename,".png");
 }
@@ -78,3 +132,16 @@ void LLGSEngine::locateResources(char *resources_cfg) {
 		}
 	}
 }
+
+void *LLGSEngine::t_createtimer() {
+	return (void *)new Ogre::Timer();
+}
+
+void  LLGSEngine::t_resettimer(void *timerptr) {
+	((Ogre::Timer *)timerptr)->reset();
+}
+
+unsigned long LLGSEngine::t_gettimermicroseconds(void *timerptr) {
+	return ((Ogre::Timer *)timerptr)->getMicroseconds();
+}
+

@@ -23,43 +23,43 @@ LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, bool fullsc
 }
 
 LLGSENGINE_API void  r_createscenemanager(char *type, char *name) {
-
+	engine.r_createscenemanager(type,name);
 }
 
 LLGSENGINE_API void *r_createcamera(char *name) {
-	return 0;
+	return engine.r_createcamera(name);
 }
 
 LLGSENGINE_API void  r_setcamerapos(void *camptr, float x, float y, float z) {
-
+	engine.r_setcamerapos(camptr,x,y,z);
 }
 
 LLGSENGINE_API void  r_cameralookat(void *camptr, float x, float y, float z) {
-
+	engine.r_cameralookat(camptr,x,y,z);
 }
 
-LLGSENGINE_API void  r_setcameraneraclipdist(void *camptr, int dist) {
-
+LLGSENGINE_API void  r_setcameraneraclipdist(void *camptr, float dist) {
+	engine.r_setcameraneraclipdist(camptr,dist);
 }
 
 LLGSENGINE_API void  r_setcameraasviewport(void *camptr) {
-
+	engine.r_setcameraasviewport(camptr);
 }
 
-LLGSENGINE_API void  r_setviewportbackground(void *camptr, float r, float g, float b) {
-
+LLGSENGINE_API void  r_setviewportbackground(float r, float g, float b) {
+	engine.r_setviewportbackground(r,g,b);
 }
 
 LLGSENGINE_API void  r_setambientlight(float r, float g, float b) {
-
+	engine.r_setambientlight(r,g,b);
 }
 
 LLGSENGINE_API void  r_renderoneframe() {
-
+	engine.r_renderoneframe();
 }
 
 LLGSENGINE_API void  r_setskybox(char *materialname) {
-
+	engine.r_setskybox(materialname);
 }
 
 LLGSENGINE_API void  r_screenshottofile(char *basename) {
@@ -70,15 +70,15 @@ LLGSENGINE_API void  r_screenshottofile(char *basename) {
 // Simple timer api
 // after renderer init
 LLGSENGINE_API void *t_createtimer() {
-	return 0;
+	return engine.t_createtimer();
 }
 
 LLGSENGINE_API void  t_resettimer(void *timerptr) {
-
+	engine.t_resettimer(timerptr);
 }
 
-LLGSENGINE_API int   t_gettimermicroseconds(void *timerptr) {
-	return 0;
+LLGSENGINE_API unsigned long   t_gettimermicroseconds(void *timerptr) {
+	return engine.t_gettimermicroseconds(timerptr);
 }
 
 // -------------------------------
