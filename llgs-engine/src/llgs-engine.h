@@ -16,6 +16,7 @@ extern "C" {
 // -------------------------------
 // Renderer api
 LLGSENGINE_API void  r_init(char *pluginsfile, char *configfile, char *logfile, char *rendersystem, char *resourcesfile);
+LLGSENGINE_API void  r_shutdown();
 LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, bool fullscreen);
 LLGSENGINE_API void  r_createscenemanager(char *type, char *name);
 
@@ -46,10 +47,11 @@ LLGSENGINE_API unsigned long   t_gettimermicroseconds(void *timerptr);
 LLGSENGINE_API void  i_init();
 LLGSENGINE_API void  i_shutdown();
 LLGSENGINE_API void  i_captureinput();
-LLGSENGINE_API bool  i_keypressed(int key);
+LLGSENGINE_API int  i_keypressed(int key);
 LLGSENGINE_API void  i_guiinput(bool enable);
-LLGSENGINE_API bool  i_leftmouse();
-LLGSENGINE_API bool  i_rightmouse();
+LLGSENGINE_API int  i_leftmouse();
+LLGSENGINE_API int  i_middlemouse();
+LLGSENGINE_API int  i_rightmouse();
 LLGSENGINE_API int   i_mousex();
 LLGSENGINE_API int   i_mousey();
 LLGSENGINE_API int   i_mouserelx();

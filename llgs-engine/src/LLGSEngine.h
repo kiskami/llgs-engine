@@ -13,12 +13,15 @@ namespace Ogre {
 	class Viewport;
 };
 
+class InputHandler;
+
 class LLGSEngine {
 public:
-	LLGSEngine(void) {}
+	LLGSEngine(void) : guiinput_enabled(false) {}
 	~LLGSEngine();
 
 	void r_init(char *pluginsfile, char *configfile, char *logfile, char *rendersystem, char *resourcesfile);
+	void r_shutdown();
 	void r_createrenderwindow(char *title, int w, int h, bool fullscreen);
 	void r_createscenemanager(char *type, char *name);
 
@@ -41,6 +44,19 @@ public:
 	void  t_resettimer(void *timerptr);
 	unsigned long   t_gettimermicroseconds(void *timerptr);
 
+	void  i_init();
+	void  i_shutdown();
+	void  i_captureinput();
+	int  i_keypressed(int key);
+	void  i_guiinput(bool enable);
+	int  i_leftmouse();
+	int  i_middlemouse();
+	int  i_rightmouse();
+	int   i_mousex();
+	int   i_mousey();
+	int   i_mouserelx();
+	int   i_mouserely();
+
 private:
 
 	void locateResources(char *resources_cfg);
@@ -49,4 +65,8 @@ private:
 	Ogre::RenderWindow *window;
 	Ogre::SceneManager *scenemanager;
 	Ogre::Viewport *viewport;
+
+	InputHandler *inputhandler;
+
+	bool guiinput_enabled;
 };

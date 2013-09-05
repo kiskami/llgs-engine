@@ -18,6 +18,10 @@ LLGSENGINE_API void r_init(char *pluginsfile, char *configfile, char *logfile, c
 	engine.r_init(pluginsfile, configfile, logfile, rendersystem, resourcesfile);
 }
 
+LLGSENGINE_API void  r_shutdown() {
+	engine.r_shutdown();
+}
+
 LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, bool fullscreen) {
 	engine.r_createrenderwindow(title, w, h, fullscreen);
 }
@@ -84,47 +88,51 @@ LLGSENGINE_API unsigned long   t_gettimermicroseconds(void *timerptr) {
 // -------------------------------
 // User input api
 LLGSENGINE_API void  i_init() {
-
+	engine.i_init();
 }
 
 LLGSENGINE_API void  i_shutdown() {
-
+	engine.i_shutdown();
 }
 
 LLGSENGINE_API void  i_captureinput() {
-
+	engine.i_captureinput();
 }
 
-LLGSENGINE_API bool  i_keypressed(int key) {
-	return false;
+LLGSENGINE_API int  i_keypressed(int key) {
+	return engine.i_keypressed(key);
 }
 
 LLGSENGINE_API void  i_guiinput(bool enable) {
-
+	engine.i_guiinput(enable);
 }
 
-LLGSENGINE_API bool  i_leftmouse() {
-	return false;
+LLGSENGINE_API int  i_leftmouse() {
+	return engine.i_leftmouse();
 }
 
-LLGSENGINE_API bool  i_rightmouse() {
-	return false;
+LLGSENGINE_API int  i_middlemouse() {
+	return engine.i_middlemouse();
+}
+
+LLGSENGINE_API int  i_rightmouse() {
+	return engine.i_rightmouse();
 }
 
 LLGSENGINE_API int   i_mousex() {
-	return 0;
+	return engine.i_mousex();
 }
 
 LLGSENGINE_API int   i_mousey() {
-	return 0;
+	return engine.i_mousey();
 }
 
 LLGSENGINE_API int   i_mouserelx() {
-	return 0;
+	return engine.i_mouserelx();
 }
 
 LLGSENGINE_API int   i_mouserely() {
-	return 0;
+	return engine.i_mouserely();
 }
 
 // simple text output functions
