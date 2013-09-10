@@ -153,9 +153,13 @@ int   InputHandler::i_mousey() {
 }
 
 int   InputHandler::i_mouserelx() {
-	return relmousex;
+	auto relx = relmousex;
+	relmousex = 0;
+	return relx;
 }
 
 int   InputHandler::i_mouserely() {
-	return relmousey;
+	auto rely = relmousey;
+	relmousey = 0;
+	return rely;
 }

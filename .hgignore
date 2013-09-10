@@ -42,3 +42,4 @@ Debug/.*
 Release/.*
 include/.*
 lib/.*
+data/.*
