@@ -141,6 +141,7 @@ LLGSENGINE_API void  c_enabledebugdrawer(bool enable);
 LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask);
 LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
 LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask);
 
 LLGSENGINE_API void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
 

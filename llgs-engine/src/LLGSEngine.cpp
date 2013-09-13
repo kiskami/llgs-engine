@@ -627,3 +627,162 @@ void  LLGSEngine::r_setlightdirection(void *lightptr, float x, float y, float z)
 			((Ogre::Light *)lightptr)->setDirection(x,y,z);
 		}
 }
+
+inline btVector3 cvt(const Ogre::Vector3 &V) {
+	return btVector3(V.x, V.y, V.z);
+}
+
+void getOgreMeshInformation(const Ogre::Mesh* const mesh,
+                        size_t &vertex_count,
+                        btVector3* &vertices,
+                        size_t &index_count,
+                        unsigned int* &indices,
+                        float *maxx_ = 0, float *maxy_ = 0, float *maxz_ = 0)
+{
+	bool added_shared = false;
+    size_t current_offset = 0;
+    size_t shared_offset = 0;
+    size_t next_offset = 0;
+    size_t index_offset = 0;
+
+    vertex_count = index_count = 0;
+
+    // Calculate how many vertices and indices we're going to need
+    for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        // We only need to add the shared vertices once
+        if(submesh->useSharedVertices)
+        {
+            if( !added_shared )
+            {
+                vertex_count += mesh->sharedVertexData->vertexCount;
+                added_shared = true;
+            }
+        }
+        else
+        {
+            vertex_count += submesh->vertexData->vertexCount;
+        }
+        // Add the indices
+        index_count += submesh->indexData->indexCount;
+    }
+
+
+    // Allocate space for the vertices and indices
+    vertices = new btVector3[vertex_count];
+    indices = new unsigned int[index_count];
+    float maxx=0, maxy=0, maxz=0;
+
+    added_shared = false;
+
+    // Run through the submeshes again, adding the data into the arrays
+    for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+
+        Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+
+        if ((!submesh->useSharedVertices) || (submesh->useSharedVertices && !added_shared))
+        {
+            if(submesh->useSharedVertices)
+            {
+                added_shared = true;
+                shared_offset = current_offset;
+            }
+
+            const Ogre::VertexElement* posElem =
+                vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+
+            Ogre::HardwareVertexBufferSharedPtr vbuf =
+                vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+
+            unsigned char* vertex =
+                static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+            float* pReal;
+
+            for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+            {
+                posElem->baseVertexPointerToElement(vertex, &pReal);
+
+                Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
+                btVector3 v = cvt(pt);
+                vertices[current_offset + j] = v;
+                if(abs(v.x())>maxx) maxx = abs(v.x());
+                if(abs(v.y())>maxy) maxy = abs(v.y());
+                if(abs(v.z())>maxz) maxz = abs(v.z());
+            }
+
+            vbuf->unlock();
+            next_offset += vertex_data->vertexCount;
+        }
+
+        if (maxx_ && maxy_ && maxz_)
+        {
+            *maxx_ = maxx;
+            *maxy_ = maxy;
+            *maxz_ = maxz;
+        }
+
+        Ogre::IndexData* index_data = submesh->indexData;
+        size_t numTris = index_data->indexCount / 3;
+        Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
+
+        bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+
+        unsigned int* pLong = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+
+        size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
+
+        if ( use32bitindexes )
+        {
+            for ( size_t k = 0; k < numTris*3; ++k)
+            {
+                indices[index_offset++] = pLong[k] + static_cast<unsigned int>(offset);
+            }
+        }
+        else
+        {
+            for ( size_t k = 0; k < numTris*3; ++k)
+            {
+                indices[index_offset++] = static_cast<unsigned int>(pShort[k]) +
+                                          static_cast<unsigned int>(offset);
+            }
+        }
+
+        ibuf->unlock();
+        current_offset = next_offset;
+    }
+}
+
+void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask) {
+	if(collisionWorld!=0) {
+
+		size_t vertex_count,index_count;
+		btVector3* vertices;
+		unsigned int* indices;
+		float maxx=0, maxy=0, maxz=0;
+
+		getOgreMeshInformation((Ogre::Mesh *)meshptr, vertex_count, vertices, index_count, indices, &maxx, &maxy, &maxz);
+		btTriangleIndexVertexArray* meshInterface = new btTriangleIndexVertexArray();
+
+		btIndexedMesh mymesh;
+		mymesh.m_vertexBase = (const unsigned char*)vertices;
+		mymesh.m_vertexStride = sizeof(btVector3);
+		mymesh.m_numVertices = vertex_count;
+		mymesh.m_triangleIndexBase = (const unsigned char*)indices;
+		mymesh.m_triangleIndexStride = sizeof( int) * 3;
+		mymesh.m_numTriangles = index_count/3;
+		mymesh.m_indexType = PHY_INTEGER;
+
+		meshInterface->addIndexedMesh(mymesh);
+
+		auto co = createCollisionObject(x,y,z,mass);
+		co->setCollisionShape(new btBvhTriangleMeshShape(meshInterface, true));
+		collisionWorld->addCollisionObject(co,mygrp,grpmask);
+		return (void *)co;
+	}
+	return 0;
+}
+

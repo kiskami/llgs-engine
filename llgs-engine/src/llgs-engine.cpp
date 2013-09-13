@@ -357,3 +357,8 @@ LLGSENGINE_API void  r_setlightdirection(void *lightptr, float x, float y, float
 LLGSENGINE_API void  r_movecameraforward(void *camptr, float dist) {
 	engine.r_movecameraforward(camptr, dist);
 }
+
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask) {
+	return engine.c_addmeshgeom(x,y,z,meshptr,mass,mygrp,grpmask);
+}
+

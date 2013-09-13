@@ -137,6 +137,7 @@ public:
 	void *c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask);
 	void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
 	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
+	void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask);
 
 	void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
 
