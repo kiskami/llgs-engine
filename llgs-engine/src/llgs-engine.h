@@ -66,7 +66,7 @@ LLGSENGINE_API void *r_getrootscenenode();
 LLGSENGINE_API void  r_destroyscenenode(void *nodeptr);
 
 LLGSENGINE_API void  r_setscenenodepos(void *nodeptr, float x, float y, float z);
-LLGSENGINE_API void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz);
+LLGSENGINE_API void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz, bool local);
 LLGSENGINE_API void  r_setscenenodescale(void *nodeptr, float xs, float ys, float zs);
 
 LLGSENGINE_API void  r_rotatescenenodex(void *nodeptr, float radian);
@@ -123,11 +123,11 @@ LLGSENGINE_API int   i_mouserely();
 
 // ----------------------------
 // simple text output functions
-LLGSENGINE_API void  *r_simpletextpanel(char *txt, char *fontname, float x, float y, float w, float h);
-LLGSENGINE_API void  r_simpletextsetcolor(void *panelptr, float r, float g, float b);
-LLGSENGINE_API void  r_simpletextshow(void *panelptr);
-LLGSENGINE_API void  r_simpletexthide(void *panelptr);
-LLGSENGINE_API void  r_simpletextsettext(void *panelptr, char *txt);
+LLGSENGINE_API void  *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h);
+LLGSENGINE_API void  r_simpletextsetcolor(char *id, float r, float g, float b);
+LLGSENGINE_API void  r_simpletextshow(char *id);
+LLGSENGINE_API void  r_simpletexthide(char *id);
+LLGSENGINE_API void  r_simpletextsettext(char *id, char *txt);
 
 // -------------------------------
 // (CE)GUI api
@@ -136,13 +136,15 @@ LLGSENGINE_API void  r_simpletextsettext(void *panelptr, char *txt);
 // Collision detection (Bullet) api
 LLGSENGINE_API void  c_init();
 LLGSENGINE_API void  c_shutdown();
-LLGSENGINE_API void  c_enabledebugdrawer(bool enable);
+LLGSENGINE_API void  c_setdebugdrawmode(int mode);
 
-LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask);
-LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
-LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
-LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask);
+LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask);
 
+LLGSENGINE_API void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
+LLGSENGINE_API void c_setdynamic(void *colobjptr, int dynamic);
 LLGSENGINE_API void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
 
 LLGSENGINE_API int c_collisiondetection();

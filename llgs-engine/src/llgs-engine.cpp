@@ -157,23 +157,23 @@ LLGSENGINE_API int   i_mouserely() {
 }
 
 // simple text output functions
-LLGSENGINE_API void *r_simpletextpanel(char *txt, char *fontname, float x, float y, float w, float h) {
-	return engine.r_simpletextpanel(txt,fontname,x,y,w,h);
+LLGSENGINE_API void *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h) {
+	return engine.r_simpletextpanel(id,txt,fontname,fontsize,x,y,w,h);
 }
 
-LLGSENGINE_API void  r_simpletextsetcolor(void *id, float r, float g, float b) {
+LLGSENGINE_API void  r_simpletextsetcolor(char *id, float r, float g, float b) {
 	engine.r_simpletextsetcolor(id,r,g,b);
 }
 
-LLGSENGINE_API void  r_simpletextshow(void *id) {
+LLGSENGINE_API void  r_simpletextshow(char *id) {
 	engine.r_simpletextshow(id);
 }
 
-LLGSENGINE_API void  r_simpletexthide(void *id) {
+LLGSENGINE_API void  r_simpletexthide(char *id) {
 	engine.r_simpletexthide(id);
 }
 
-LLGSENGINE_API void  r_simpletextsettext(void *id, char *txt) {
+LLGSENGINE_API void  r_simpletextsettext(char *id, char *txt) {
 	engine.r_simpletextsettext(id,txt);
 }
 
@@ -209,8 +209,8 @@ LLGSENGINE_API void  r_setscenenodepos(void *nodeptr, float x, float y, float z)
 	engine.r_setscenenodepos(nodeptr,x,y,z);
 }
 
-LLGSENGINE_API void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz) {
-	engine.r_translatescenenode(nodeptr,dx,dy,dz);
+LLGSENGINE_API void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz, bool local) {
+	engine.r_translatescenenode(nodeptr,dx,dy,dz,local);
 }
 
 LLGSENGINE_API void  r_setscenenodescale(void *nodeptr, float xs, float ys, float zs) {
@@ -294,20 +294,24 @@ LLGSENGINE_API void  c_shutdown() {
 	engine.c_shutdown();
 }
 
-LLGSENGINE_API void  c_enabledebugdrawer(bool enable) {
-	engine.c_enabledebugdrawer(enable);
+LLGSENGINE_API void  c_setdebugdrawmode(int mode) {
+	engine.c_setdebugdrawmode(mode);
 }
 
-LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask) {
+LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask) {
 	return engine.c_addsphere(x,y,z,radius,mass,mygrp,grpmask);
 }
 
-LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask) {
+LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
 	return engine.c_addbox(x,y,z,halfext1,halfext2,halfext3,mass,mygrp,grpmask);
 }
 
-LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask) {
+LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
 	return engine.c_addcilinder(x,y,z,halfext1,halfext2,halfext3,mass,mygrp,grpmask);
+}
+
+LLGSENGINE_API void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs) {
+	return engine.c_setlocalscaling(colobjptr,xs,ys,zs);
 }
 
 LLGSENGINE_API void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr) {
@@ -358,7 +362,10 @@ LLGSENGINE_API void  r_movecameraforward(void *camptr, float dist) {
 	engine.r_movecameraforward(camptr, dist);
 }
 
-LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask) {
-	return engine.c_addmeshgeom(x,y,z,meshptr,mass,mygrp,grpmask);
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask) {
+	return engine.c_addmeshgeom(x,y,z,entityptr,mass,mygrp,grpmask);
 }
 
+LLGSENGINE_API void c_setdynamic(void *colobjptr, int dynamic) {
+	engine.c_setdynamic(colobjptr,dynamic);
+}

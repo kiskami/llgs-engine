@@ -6,14 +6,10 @@
 
 #pragma once
 
-namespace Ogre {
-	class Root;
-	class RenderWindow;
-	class SceneManager;
-	class Viewport;
-};
+#include "OGRE\Ogre.h"
 
 class btCollisionWorld;
+class btCollisionObject;
 
 class InputHandler;
 
@@ -79,11 +75,11 @@ public:
 	int   i_mouserelx();
 	int   i_mouserely();
 
-	void *r_simpletextpanel(char *txt, char *fontname, float x, float y, float w, float h);
-	void  r_simpletextsetcolor(void *panelptr, float r, float g, float b);
-	void  r_simpletextshow(void *panelptr);
-	void  r_simpletexthide(void *panelptr);
-	void  r_simpletextsettext(void *panelptr, char *txt);
+	void *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h);
+	void  r_simpletextsetcolor(char *id, float r, float g, float b);
+	void  r_simpletextshow(char *id);
+	void  r_simpletexthide(char *id);
+	void  r_simpletextsettext(char *id, char *txt);
 
 	void *r_loadmesh(char *name, char *meshname);
 	void  r_destroymesh(void *entityptr);
@@ -96,7 +92,7 @@ public:
 	void  r_destroyscenenode(void *nodeptr);
 
 	void  r_setscenenodepos(void *nodeptr, float x, float y, float z);
-	void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz);
+	void  r_translatescenenode(void *nodeptr, float dx, float dy, float dz, bool local);
 	void  r_setscenenodescale(void *nodeptr, float xs, float ys, float zs);
 
 	void  r_rotatescenenodex(void *nodeptr, float radian);
@@ -132,13 +128,15 @@ public:
 
 	void  c_init();
 	void  c_shutdown();
-	void  c_enabledebugdrawer(bool enable);
+	void  c_setdebugdrawmode(int mode);
 
-	void *c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask);
-	void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
-	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask);
-	void *c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask);
+	void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask);
+	void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
+	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
+	void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask);
 
+	void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
+	void c_setdynamic(void *colobjptr, int dynamic);
 	void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
 
 	int c_collisiondetection();
@@ -148,6 +146,7 @@ public:
 private:
 
 	void locateResources(char *resources_cfg);
+	btCollisionObject *createCollisionObject(float x, float y, float z, float mass);
 
 	Ogre::Root *root;
 	Ogre::RenderWindow *window;
@@ -160,4 +159,12 @@ private:
 
 	btCollisionWorld* collisionWorld;
 	int collisionDebugmode;
+	Ogre::SceneNode *colldebugnode;
+	Ogre::MaterialPtr colldebugmat;
+	Ogre::ManualObject* debugManualObj;
+
+	void createDebugManuals();
+
+	Ogre::Overlay*           st_overlay;
+    Ogre::OverlayContainer*  st_panel;
 };

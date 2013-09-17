@@ -8,9 +8,9 @@
 
 #include "LLGSEngine.h"
 
-#include "OGRE\Ogre.h"
-
 #include "Bullet\btBulletCollisionCommon.h"
+#include "Bullet\BulletCollision\Gimpact\btGImpactShape.h"
+#include "Bullet\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.h"
 
 #include <functional>
 #include <locale>
@@ -60,6 +60,13 @@ void LLGSEngine::r_createscenemanager(char *type, char *name) {
 		if(pt.compare("INTERIOR")==0) sctype = Ogre::ST_INTERIOR;
 
  		scenemanager = Ogre::Root::getSingleton().createSceneManager(sctype, name);
+
+		st_overlay = Ogre::OverlayManager::getSingleton().create("st_overlay");
+		st_panel = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "st_container"));
+		st_panel->setDimensions(1, 1);
+		st_panel->setPosition(0, 0);
+		st_overlay->add2D(st_panel);
+		st_overlay->show();
 	}
 }
 
@@ -259,24 +266,40 @@ int   LLGSEngine::i_mouserely() {
 	return 0;
 }
 
-void  *LLGSEngine::r_simpletextpanel(char *txt, char *fontname, float x, float y, float w, float h) {
+void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h) {
+	if(st_overlay!=0) {
+		Ogre::OverlayElement* textBox = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea",id);
+	    textBox->setMetricsMode(Ogre::GMM_PIXELS);
+	    textBox->setDimensions(w, h);
+		textBox->setPosition(x, y);
+		textBox->setWidth(w);
+	    textBox->setHeight(h);
+		textBox->setParameter("font_name", fontname);
+		textBox->setParameter("char_height", ""+fontsize);
+		textBox->setColour(Ogre::ColourValue::White);
+ 
+	    textBox->setCaption(txt);
+ 
+	    st_panel->addChild(textBox);
+		return textBox;
+	}
 	return 0;
 }
 
-void  LLGSEngine::r_simpletextsetcolor(void *id, float r, float g, float b) {
-
+void  LLGSEngine::r_simpletextsetcolor(char *id, float r, float g, float b) {
+	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->setColour(Ogre::ColourValue(r,g,b));
 }
 
-void  LLGSEngine::r_simpletextshow(void *id) {
-
+void  LLGSEngine::r_simpletextshow(char *id) {
+	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->show();
 }
 
-void  LLGSEngine::r_simpletexthide(void *id) {
-
+void  LLGSEngine::r_simpletexthide(char *id) {
+	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->hide();
 }
 
-void  LLGSEngine::r_simpletextsettext(void *id, char *txt) {
-
+void  LLGSEngine::r_simpletextsettext(char *id, char *txt) {
+	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->setCaption(txt);
 }
 
 void *LLGSEngine::r_loadmesh(char *name, char *meshname) {
@@ -319,8 +342,8 @@ void  LLGSEngine::r_setscenenodepos(void *nodeptr, float x, float y, float z) {
 	static_cast<Ogre::SceneNode *>(nodeptr)->setPosition(x,y,z);
 }
 
-void  LLGSEngine::r_translatescenenode(void *nodeptr, float dx, float dy, float dz) {
-	static_cast<Ogre::SceneNode *>(nodeptr)->translate(dx,dy,dz);
+void  LLGSEngine::r_translatescenenode(void *nodeptr, float dx, float dy, float dz, bool local) {
+	static_cast<Ogre::SceneNode *>(nodeptr)->translate(dx,dy,dz,local?Ogre::Node::TS_LOCAL:Ogre::Node::TS_PARENT);
 }
 
 void  LLGSEngine::r_setscenenodescale(void *nodeptr, float xs, float ys, float zs) {
@@ -399,32 +422,36 @@ void  LLGSEngine::r_setpartsysvis(void *partsysptr, bool visible) {
 }
 
 void  LLGSEngine::c_init() {
-	auto collisionConfiguration = new btDefaultCollisionConfiguration();
+	auto collisionConfiguration = new btDefaultCollisionConfiguration;
 	collisionWorld = new btCollisionWorld(
 		new btCollisionDispatcher(collisionConfiguration)
-		,new btDbvtBroadphase()
+		,new btDbvtBroadphase
 		,collisionConfiguration);
+	collisionWorld->setDebugDrawer(this);
+	btGImpactCollisionAlgorithm::registerAlgorithm(static_cast<btCollisionDispatcher *>(collisionWorld->getDispatcher()));
+	colldebugnode = scenemanager->getRootSceneNode()->createChildSceneNode();
 }
 
 void  LLGSEngine::c_shutdown() {
 	if(collisionWorld!=0) {
 		delete collisionWorld;
 		collisionWorld = 0;
+		if(colldebugnode!=0) {
+			if(scenemanager!=0) {
+				scenemanager->destroySceneNode(colldebugnode);
+			}
+			colldebugnode = 0;
+		}
 	}
 }
 
-void  LLGSEngine::c_enabledebugdrawer(bool enable) {
+void  LLGSEngine::c_setdebugdrawmode(int mode) {
 	if(collisionWorld!=0) {
-		if(enable)
-			collisionWorld->setDebugDrawer(this);
-		else
-			collisionWorld->setDebugDrawer(0);
+		collisionDebugmode = mode;
 	}
 }
 
-Ogre::MaterialPtr colldebugmat;
-
-void createManualMat() {
+void LLGSEngine::createDebugManuals() {
 	if(colldebugmat.isNull()) {
 		colldebugmat = Ogre::MaterialManager::getSingleton().create("colldebugmat","Common"); 
 		colldebugmat->setReceiveShadows(false);
@@ -434,39 +461,31 @@ void createManualMat() {
 		colldebugmat->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1); 
 //		colldebugmat.setNull();  // dispose pointer, not the material 
 	}
+
+	if(debugManualObj==0) {
+		debugManualObj =  scenemanager->createManualObject();
+	}
 }
 
 void LLGSEngine::drawLine(const btVector3& from,const btVector3& to,const btVector3& color) {
-	if(collisionDebugmode!=btIDebugDraw::DBG_NoDebug) {
-		Ogre::ManualObject* myManualObject =  scenemanager->createManualObject();
-		//	Ogre::SceneNode* myManualObjectNode = scenemanager->getRootSceneNode()->createChildSceneNode("manual1_node"); 
+		createDebugManuals();
 
-		createManualMat();
-
-		myManualObject->begin("colldebugmat", Ogre::RenderOperation::OT_LINE_LIST); 
-		myManualObject->position(from.getX(),from.getY(),from.getZ()); 
-		myManualObject->position(to.getX(),to.getY(),to.getZ()); 
-		myManualObject->colour(color.getX(),color.getY(),color.getZ());
-		myManualObject->end(); 
-
-		scenemanager->getRootSceneNode()->createChildSceneNode()->attachObject(myManualObject);
-	}
+		debugManualObj->begin("colldebugmat", Ogre::RenderOperation::OT_LINE_LIST); 
+		debugManualObj->position(from.getX(),from.getY(),from.getZ()); 
+		debugManualObj->position(to.getX(),to.getY(),to.getZ()); 
+		debugManualObj->colour(color.getX(),color.getY(),color.getZ());
+		debugManualObj->end(); 
 }
 
 void LLGSEngine::drawContactPoint (const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color) {
-	if(collisionDebugmode &  btIDebugDraw::DBG_DrawContactPoints) {
-		Ogre::ManualObject* myManualObject =  scenemanager->createManualObject();
+		createDebugManuals();
 
-		createManualMat();
+		debugManualObj->begin("colldebugmat", Ogre::RenderOperation::OT_POINT_LIST);
+		debugManualObj->position(PointOnB.getX(),PointOnB.getY(),PointOnB.getZ());
+		debugManualObj->normal(normalOnB.getX(),normalOnB.getY(),normalOnB.getZ());
+		debugManualObj->colour(color.getX(),color.getY(),color.getZ());
+		debugManualObj->end(); 
 
-		myManualObject->begin("manual1Material", Ogre::RenderOperation::OT_POINT_LIST);
-		myManualObject->position(PointOnB.getX(),PointOnB.getY(),PointOnB.getZ());
-		myManualObject->normal(normalOnB.getX(),normalOnB.getY(),normalOnB.getZ());
-		myManualObject->colour(color.getX(),color.getY(),color.getZ());
-		myManualObject->end(); 
-
-		scenemanager->getRootSceneNode()->createChildSceneNode()->attachObject(myManualObject);
-	}
 }
 
 void LLGSEngine::reportErrorWarning (const char *warningString) {
@@ -484,22 +503,24 @@ int LLGSEngine::getDebugMode () const {
 	return collisionDebugmode;
 }
 
-void setCollObjStaticFlag(btCollisionObject *co, int mass) {
-	if(mass==0) {
-		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
-	}
-}
+//void setCollObjStaticFlag(btCollisionObject *co, int mass) {
+//	if(mass==0) {
+//		co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+//	}
+//}
 
-btCollisionObject *createCollisionObject(float x, float y, float z, float mass) {
+btCollisionObject *LLGSEngine::createCollisionObject(float x, float y, float z, float mass) {
 	auto co = new btCollisionObject();
 	btTransform t;
+	t.setIdentity();
 	t.setOrigin(btVector3(x,y,z));
 	co->setWorldTransform(t);
-	setCollObjStaticFlag(co,mass);
+	c_setdynamic(co,mass);
+	co->activate();
 	return co;
 }
 
-void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, float mass, int mygrp, int grpmask) {
+void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btSphereShape(radius);
 		auto co = createCollisionObject(x,y,z,mass);
@@ -510,7 +531,7 @@ void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, float mas
 	return 0;
 }
 
-void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask) {
+void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btBoxShape(btVector3(halfext1, halfext2, halfext3));
 		auto co = createCollisionObject(x,y,z,mass);
@@ -521,7 +542,7 @@ void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float half
 	return 0;
 }
 
-void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, int mygrp, int grpmask) {
+void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btCylinderShape(btVector3(halfext1, halfext2, halfext3));
 		auto co = createCollisionObject(x,y,z,mass);
@@ -530,6 +551,28 @@ void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float
 		return (void *)co;
 	}
 	return 0;
+}
+
+void LLGSEngine::c_setlocalscaling(void *colobjptr, float xs, float ys, float zs) {
+	auto co = static_cast<btCollisionObject *>(colobjptr);
+	co->getCollisionShape()->setLocalScaling(btVector3(xs,ys,zs));
+	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
+	if(gis) {
+//		Ogre::LogManager::getSingleton().logMessage("setlocalscaling: updating bounds");
+		gis->updateBound();
+	}
+}
+
+void checkCollisionShapeSize(btCollisionObject *co, Ogre::String name) {
+		// from Bullet source
+		btVector3 minAabb,maxAabb;
+		co->getCollisionShape()->getAabb(co->getWorldTransform(), minAabb, maxAabb);
+		if((maxAabb-minAabb).length2() >= btScalar(1e12)) {
+			Ogre::LogManager::getSingleton().stream() 
+				<< "Warning: mesh is too big (("<< minAabb.getX() << "," << minAabb.getY() << "," << minAabb.getZ() << "),("
+				<< maxAabb.getX() << "," << maxAabb.getY() << "," << maxAabb.getZ() << ")) -> "			
+				<< (maxAabb-minAabb).length2() << ") for a kinetic object for Bullet: " << name;
+		}
 }
 
 void  LLGSEngine::c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr) {
@@ -541,12 +584,34 @@ void  LLGSEngine::c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr) {
 	Ogre::Quaternion snq = sn->getOrientation();
 	t.setRotation(btQuaternion(snq.x,snq.y,snq.z,snq.w));
 	co->setWorldTransform(t);
+
+	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
+	if(gis) {
+//		Ogre::LogManager::getSingleton().logMessage("synccolobjtoscenenode: updating bounds");
+		gis->postUpdate();
+		gis->updateBound();
+	}
+
+	checkCollisionShapeSize(co,sn->getName());
 }
 
 int LLGSEngine::c_collisiondetection() {
 	if(collisionWorld!=0) {
 		collisionWorld->performDiscreteCollisionDetection();
+
+		if(debugManualObj) {
+			if(debugManualObj->isAttached()) {
+				colldebugnode->detachObject(debugManualObj);
+			}
+			scenemanager->destroyManualObject(debugManualObj);
+			debugManualObj = 0;
+		}
+
 		collisionWorld->debugDrawWorld();
+
+		if(debugManualObj) {
+			colldebugnode->attachObject(debugManualObj);
+		}
 
 		return collisionWorld->getDispatcher()->getNumManifolds();
 	}
@@ -557,7 +622,7 @@ void *LLGSEngine::c_getcollisionpairObjA(int index) {
 	if(collisionWorld!=0) {
 		btPersistentManifold* contactManifold = collisionWorld->getDispatcher()->getManifoldByIndexInternal(index);
 		if(contactManifold!=0) {
-			return contactManifold->getBody0();
+			return (void *)contactManifold->getBody0();
 		}
 	}
 	return 0;
@@ -567,7 +632,7 @@ void *LLGSEngine::c_getcollisionpairObjB(int index) {
 	if(collisionWorld!=0) {
 		btPersistentManifold* contactManifold = collisionWorld->getDispatcher()->getManifoldByIndexInternal(index);
 		if(contactManifold!=0) {
-			return contactManifold->getBody1();
+			return (void *)contactManifold->getBody1();
 		}
 	}
 	return 0;
@@ -628,161 +693,166 @@ void  LLGSEngine::r_setlightdirection(void *lightptr, float x, float y, float z)
 		}
 }
 
-inline btVector3 cvt(const Ogre::Vector3 &V) {
-	return btVector3(V.x, V.y, V.z);
+/// Shares vertices/indexes between Ogre and Bullet
+class MeshStrider : public btStridingMeshInterface {
+ 
+public:
+    MeshStrider( Ogre::Mesh * m = 0 ) : mMesh(m){
+		//auto corners = m->getBounds().getAllCorners();
+		//Ogre::LogManager::getSingleton().logMessage("MeshStrider: binding Ogre::Mesh "+ m->getName() +" to Bullet. Bounds: ");
+		//for(int i=0; i < 8; ++i)
+		//	Ogre::LogManager::getSingleton().stream() << i << ". (" << corners->x << "," << corners->y << "," << corners++->z << ")";
+	}
+ 
+    void set( Ogre::Mesh * m ) { mMesh = m; }
+    // inherited interface
+    virtual int        getNumSubParts() const;
+ 
+    virtual void    getLockedVertexIndexBase(unsigned char **vertexbase, int& numverts,PHY_ScalarType& type, int& stride,unsigned char **indexbase,int & indexstride,int& numfaces,PHY_ScalarType& indicestype,int subpart=0);
+    virtual void    getLockedReadOnlyVertexIndexBase(const unsigned char **vertexbase, int& numverts,PHY_ScalarType& type, int& stride,const unsigned char **indexbase,int & indexstride,int& numfaces,PHY_ScalarType& indicestype,int subpart=0) const;
+ 
+    virtual void    unLockVertexBase(int subpart);
+    virtual void    unLockReadOnlyVertexBase(int subpart) const;
+ 
+    virtual void    preallocateVertices(int numverts);
+    virtual void    preallocateIndices(int numindices);
+private:
+    Ogre::Mesh * mMesh;
+};
+
+int MeshStrider::getNumSubParts() const {
+    int ret = mMesh->getNumSubMeshes();
+    return ret;
+}
+ 
+void MeshStrider::getLockedReadOnlyVertexIndexBase ( 
+    const unsigned char **vertexbase, 
+    int& numverts,
+    PHY_ScalarType& type, 
+    int& stride,
+    const unsigned char **indexbase,
+    int & indexstride,
+    int& numfaces,
+    PHY_ScalarType& indicestype,
+    int subpart/*=0*/ ) const {
+    Ogre::SubMesh* submesh = mMesh->getSubMesh(subpart);
+ 
+    Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mMesh->sharedVertexData : submesh->vertexData;
+ 
+    const Ogre::VertexElement* posElem =
+        vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+ 
+    Ogre::HardwareVertexBufferSharedPtr vbuf =
+        vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+ 
+    *vertexbase =
+        reinterpret_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+    // There is _no_ baseVertexPointerToElement() which takes an Ogre::Real or a double
+    //  as second argument. So make it float, to avoid trouble when Ogre::Real will
+    //  be comiled/typedefed as double:
+    //Ogre::Real* pReal;
+    float* pReal;
+    posElem->baseVertexPointerToElement((void*) *vertexbase, &pReal);
+    *vertexbase = (unsigned char*) pReal;
+ 
+    stride = (int) vbuf->getVertexSize();
+ 
+    numverts = (int) vertex_data->vertexCount;
+	assert( numverts );
+
+    type = PHY_FLOAT;
+ 
+    Ogre::IndexData* index_data = submesh->indexData;
+    Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
+ 
+    if (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT) {
+        indicestype = PHY_INTEGER;
+    }
+    else {
+//        ASSERT(ibuf->getType() == Ogre::HardwareIndexBuffer::IT_16BIT);
+		assert(ibuf->getType() == Ogre::HardwareIndexBuffer::IT_16BIT);
+        indicestype = PHY_SHORT;
+    }
+ 
+    if ( submesh->operationType == Ogre::RenderOperation::OT_TRIANGLE_LIST ) {
+        numfaces = (int) index_data->indexCount / 3;
+        indexstride = (int) ibuf->getIndexSize()*3;
+    }
+    else
+    if ( submesh->operationType == Ogre::RenderOperation::OT_TRIANGLE_STRIP ) {
+        numfaces = (int) index_data->indexCount -2;
+        indexstride = (int) ibuf->getIndexSize();
+    }
+    else {
+//        ASSERT( 0 ); // not supported
+		assert(0);
+    }
+ 
+    *indexbase = reinterpret_cast<unsigned char*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+
+//	Ogre::LogManager::getSingleton().stream() << "MeshStrider::getLockedReadOnlyVertexIndexBase numverts=" << numverts << " stride=" << stride << " indexstride=" << indexstride
+//											  << " numfaces=" << numfaces << " subpart=" << subpart;
+}
+ 
+void MeshStrider::getLockedVertexIndexBase( unsigned char **vertexbase, int& numverts,PHY_ScalarType& type, int& stride,unsigned char **indexbase,int & indexstride,int& numfaces,PHY_ScalarType& indicestype,int subpart/*=0*/ ) {
+//    ASSERT( 0 );
+	assert(0);
+}
+ 
+void MeshStrider::unLockReadOnlyVertexBase( int subpart ) const {
+    Ogre::SubMesh* submesh = mMesh->getSubMesh(subpart);
+ 
+    Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mMesh->sharedVertexData : submesh->vertexData;
+ 
+    const Ogre::VertexElement* posElem =
+        vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+ 
+    Ogre::HardwareVertexBufferSharedPtr vbuf =
+        vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+ 
+    vbuf->unlock();
+ 
+    Ogre::IndexData* index_data = submesh->indexData;
+    Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
+    ibuf->unlock();
+}
+ 
+void MeshStrider::unLockVertexBase( int subpart ) {
+//    ASSERT( 0 );
+	assert(0);
+}
+ 
+void MeshStrider::preallocateVertices( int numverts ) {
+//    ASSERT( 0 );
+	assert(0);
+}
+ 
+void MeshStrider::preallocateIndices( int numindices ) {
+//    ASSERT( 0 );
+	assert(0);
 }
 
-void getOgreMeshInformation(const Ogre::Mesh* const mesh,
-                        size_t &vertex_count,
-                        btVector3* &vertices,
-                        size_t &index_count,
-                        unsigned int* &indices,
-                        float *maxx_ = 0, float *maxy_ = 0, float *maxz_ = 0)
-{
-	bool added_shared = false;
-    size_t current_offset = 0;
-    size_t shared_offset = 0;
-    size_t next_offset = 0;
-    size_t index_offset = 0;
-
-    vertex_count = index_count = 0;
-
-    // Calculate how many vertices and indices we're going to need
-    for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-    {
-        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-        // We only need to add the shared vertices once
-        if(submesh->useSharedVertices)
-        {
-            if( !added_shared )
-            {
-                vertex_count += mesh->sharedVertexData->vertexCount;
-                added_shared = true;
-            }
-        }
-        else
-        {
-            vertex_count += submesh->vertexData->vertexCount;
-        }
-        // Add the indices
-        index_count += submesh->indexData->indexCount;
-    }
-
-
-    // Allocate space for the vertices and indices
-    vertices = new btVector3[vertex_count];
-    indices = new unsigned int[index_count];
-    float maxx=0, maxy=0, maxz=0;
-
-    added_shared = false;
-
-    // Run through the submeshes again, adding the data into the arrays
-    for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-    {
-        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-
-        Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-
-        if ((!submesh->useSharedVertices) || (submesh->useSharedVertices && !added_shared))
-        {
-            if(submesh->useSharedVertices)
-            {
-                added_shared = true;
-                shared_offset = current_offset;
-            }
-
-            const Ogre::VertexElement* posElem =
-                vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-
-            Ogre::HardwareVertexBufferSharedPtr vbuf =
-                vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-
-            unsigned char* vertex =
-                static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-            float* pReal;
-
-            for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
-            {
-                posElem->baseVertexPointerToElement(vertex, &pReal);
-
-                Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
-                btVector3 v = cvt(pt);
-                vertices[current_offset + j] = v;
-                if(abs(v.x())>maxx) maxx = abs(v.x());
-                if(abs(v.y())>maxy) maxy = abs(v.y());
-                if(abs(v.z())>maxz) maxz = abs(v.z());
-            }
-
-            vbuf->unlock();
-            next_offset += vertex_data->vertexCount;
-        }
-
-        if (maxx_ && maxy_ && maxz_)
-        {
-            *maxx_ = maxx;
-            *maxy_ = maxy;
-            *maxz_ = maxz;
-        }
-
-        Ogre::IndexData* index_data = submesh->indexData;
-        size_t numTris = index_data->indexCount / 3;
-        Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-
-        bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-
-        unsigned int* pLong = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
-
-        size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
-
-        if ( use32bitindexes )
-        {
-            for ( size_t k = 0; k < numTris*3; ++k)
-            {
-                indices[index_offset++] = pLong[k] + static_cast<unsigned int>(offset);
-            }
-        }
-        else
-        {
-            for ( size_t k = 0; k < numTris*3; ++k)
-            {
-                indices[index_offset++] = static_cast<unsigned int>(pShort[k]) +
-                                          static_cast<unsigned int>(offset);
-            }
-        }
-
-        ibuf->unlock();
-        current_offset = next_offset;
-    }
-}
-
-void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *meshptr, float mass, int mygrp, int grpmask) {
+void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
-
-		size_t vertex_count,index_count;
-		btVector3* vertices;
-		unsigned int* indices;
-		float maxx=0, maxy=0, maxz=0;
-
-		getOgreMeshInformation((Ogre::Mesh *)meshptr, vertex_count, vertices, index_count, indices, &maxx, &maxy, &maxz);
-		btTriangleIndexVertexArray* meshInterface = new btTriangleIndexVertexArray();
-
-		btIndexedMesh mymesh;
-		mymesh.m_vertexBase = (const unsigned char*)vertices;
-		mymesh.m_vertexStride = sizeof(btVector3);
-		mymesh.m_numVertices = vertex_count;
-		mymesh.m_triangleIndexBase = (const unsigned char*)indices;
-		mymesh.m_triangleIndexStride = sizeof( int) * 3;
-		mymesh.m_numTriangles = index_count/3;
-		mymesh.m_indexType = PHY_INTEGER;
-
-		meshInterface->addIndexedMesh(mymesh);
-
 		auto co = createCollisionObject(x,y,z,mass);
-		co->setCollisionShape(new btBvhTriangleMeshShape(meshInterface, true));
+		auto trimesh = new btGImpactMeshShape(new MeshStrider(((Ogre::Entity *)entityptr)->getMesh().get()));
+//		Ogre::LogManager::getSingleton().logMessage("addmeshgeom: updating bounds");
+		trimesh->updateBound();
+		co->setCollisionShape(trimesh);
+		checkCollisionShapeSize(co,((Ogre::Entity *)entityptr)->getName());
+
 		collisionWorld->addCollisionObject(co,mygrp,grpmask);
 		return (void *)co;
 	}
 	return 0;
 }
 
+void LLGSEngine::c_setdynamic(void *colobjptr, int dynamic) {
+	//if(collisionWorld!=0) {
+	//	if(dynamic>0) {
+	//		((btCollisionObject *)colobjptr)->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+	//		((btCollisionObject *)colobjptr)->setActivationState(ACTIVE_TAG | DISABLE_DEACTIVATION);
+	//	} else
+	//		((btCollisionObject *)colobjptr)->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+	//}
+}
