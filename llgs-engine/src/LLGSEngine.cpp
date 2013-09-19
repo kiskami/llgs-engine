@@ -12,6 +12,8 @@
 #include "Bullet\BulletCollision\Gimpact\btGImpactShape.h"
 #include "Bullet\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.h"
 
+#include "OGRE\OgreFontManager.h"
+
 #include <functional>
 #include <locale>
 
@@ -41,9 +43,9 @@ void  LLGSEngine::r_shutdown() {
 	}
 }
 
-void LLGSEngine::r_createrenderwindow(char *title, int w, int h, bool fullscreen) {
+void LLGSEngine::r_createrenderwindow(char *title, int w, int h, int fullscreen) {
 	if(root!=0) {
-		window = Ogre::Root::getSingleton().createRenderWindow(title, w, h, fullscreen);
+		window = Ogre::Root::getSingleton().createRenderWindow(title, w, h, fullscreen>0?true:false);
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	}
 }
@@ -61,12 +63,16 @@ void LLGSEngine::r_createscenemanager(char *type, char *name) {
 
  		scenemanager = Ogre::Root::getSingleton().createSceneManager(sctype, name);
 
+		auto iter = Ogre::FontManager::getSingleton().getResourceIterator();
+		while (iter.hasMoreElements()) { iter.getNext()->load(); }
+
 		st_overlay = Ogre::OverlayManager::getSingleton().create("st_overlay");
 		st_panel = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "st_container"));
 		st_panel->setDimensions(1, 1);
 		st_panel->setPosition(0, 0);
 		st_overlay->add2D(st_panel);
-		st_overlay->show();
+//		st_overlay->show();
+		st_panel->show();
 	}
 }
 
@@ -269,16 +275,15 @@ int   LLGSEngine::i_mouserely() {
 void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h) {
 	if(st_overlay!=0) {
 		Ogre::OverlayElement* textBox = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea",id);
-	    textBox->setMetricsMode(Ogre::GMM_PIXELS);
+		textBox->setMetricsMode(Ogre::GuiMetricsMode::GMM_PIXELS);
 	    textBox->setDimensions(w, h);
 		textBox->setPosition(x, y);
-		textBox->setWidth(w);
-	    textBox->setHeight(h);
 		textBox->setParameter("font_name", fontname);
 		textBox->setParameter("char_height", ""+fontsize);
 		textBox->setColour(Ogre::ColourValue::White);
  
 	    textBox->setCaption(txt);
+		textBox->setEnabled(true);
  
 	    st_panel->addChild(textBox);
 		return textBox;
@@ -287,19 +292,26 @@ void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, int fo
 }
 
 void  LLGSEngine::r_simpletextsetcolor(char *id, float r, float g, float b) {
-	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->setColour(Ogre::ColourValue(r,g,b));
+	auto e = Ogre::OverlayManager::getSingleton().getOverlayElement(id);
+	assert(e);
+	e->setColour(Ogre::ColourValue(r,g,b));
 }
 
 void  LLGSEngine::r_simpletextshow(char *id) {
-	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->show();
+	auto e = Ogre::OverlayManager::getSingleton().getOverlayElement(id);
+	assert(e);
+	e->show();
 }
 
 void  LLGSEngine::r_simpletexthide(char *id) {
-	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->hide();
+	auto e = Ogre::OverlayManager::getSingleton().getOverlayElement(id);
+	assert(e);
+	e->hide();
 }
 
 void  LLGSEngine::r_simpletextsettext(char *id, char *txt) {
-	((Ogre::OverlayElement*)Ogre::OverlayManager::getSingleton().getByName(id))->setCaption(txt);
+	auto e = Ogre::OverlayManager::getSingleton().getOverlayElement(id);
+	e->setCaption(txt);
 }
 
 void *LLGSEngine::r_loadmesh(char *name, char *meshname) {
@@ -509,21 +521,20 @@ int LLGSEngine::getDebugMode () const {
 //	}
 //}
 
-btCollisionObject *LLGSEngine::createCollisionObject(float x, float y, float z, float mass) {
+btCollisionObject *LLGSEngine::createCollisionObject(float x, float y, float z) {
 	auto co = new btCollisionObject();
 	btTransform t;
 	t.setIdentity();
 	t.setOrigin(btVector3(x,y,z));
 	co->setWorldTransform(t);
-	c_setdynamic(co,mass);
 	co->activate();
 	return co;
 }
 
-void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask) {
+void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btSphereShape(radius);
-		auto co = createCollisionObject(x,y,z,mass);
+		auto co = createCollisionObject(x,y,z);
 		co->setCollisionShape(cs);
 		collisionWorld->addCollisionObject(co,mygrp,grpmask);
 		return (void *)co;
@@ -531,10 +542,10 @@ void *LLGSEngine::c_addsphere(float x, float y, float z, float radius, float mas
 	return 0;
 }
 
-void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
+void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btBoxShape(btVector3(halfext1, halfext2, halfext3));
-		auto co = createCollisionObject(x,y,z,mass);
+		auto co = createCollisionObject(x,y,z);
 		co->setCollisionShape(cs);
 		collisionWorld->addCollisionObject(co,mygrp,grpmask);
 		return (void *)co;
@@ -542,10 +553,10 @@ void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float half
 	return 0;
 }
 
-void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
+void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
 		auto cs = new btCylinderShape(btVector3(halfext1, halfext2, halfext3));
-		auto co = createCollisionObject(x,y,z,mass);
+		auto co = createCollisionObject(x,y,z);
 		co->setCollisionShape(cs);
 		collisionWorld->addCollisionObject(co,mygrp,grpmask);
 		return (void *)co;
@@ -832,9 +843,9 @@ void MeshStrider::preallocateIndices( int numindices ) {
 	assert(0);
 }
 
-void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask) {
+void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask) {
 	if(collisionWorld!=0) {
-		auto co = createCollisionObject(x,y,z,mass);
+		auto co = createCollisionObject(x,y,z);
 		auto trimesh = new btGImpactMeshShape(new MeshStrider(((Ogre::Entity *)entityptr)->getMesh().get()));
 //		Ogre::LogManager::getSingleton().logMessage("addmeshgeom: updating bounds");
 		trimesh->updateBound();
@@ -847,12 +858,111 @@ void *LLGSEngine::c_addmeshgeom(float x, float y, float z, void *entityptr, floa
 	return 0;
 }
 
-void LLGSEngine::c_setdynamic(void *colobjptr, int dynamic) {
-	//if(collisionWorld!=0) {
-	//	if(dynamic>0) {
-	//		((btCollisionObject *)colobjptr)->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
-	//		((btCollisionObject *)colobjptr)->setActivationState(ACTIVE_TAG | DISABLE_DEACTIVATION);
-	//	} else
-	//		((btCollisionObject *)colobjptr)->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
-	//}
+float LLGSEngine::r_actfps() {
+	if(window!=0) {
+		return window->getLastFPS();
+	}
+	return 0;
+}
+
+float LLGSEngine::r_minfps() {
+	if(window!=0) {
+		return window->getWorstFPS();
+	}
+	return 0;
+}
+
+float LLGSEngine::r_maxfps() {
+	if(window!=0) {
+		return window->getBestFPS();
+	}
+	return 0;
+}
+
+long LLGSEngine::r_trianglecount() {
+	if(window!=0) {
+		return window->getTriangleCount();
+	}
+	return 0;
+}
+
+long LLGSEngine::r_batchcount() {
+	if(window!=0) {
+		return window->getBatchCount();
+	}
+	return 0;
+}
+
+float LLGSEngine::r_getscenenodeposx(void *nodeptr) {
+	if(nodeptr!=0) {
+		return ((Ogre::SceneNode *)nodeptr)->getPosition().x;
+	}
+	return 0;
+}
+
+float LLGSEngine::r_getscenenodeposy(void *nodeptr) {
+	if(nodeptr!=0) {
+		return ((Ogre::SceneNode *)nodeptr)->getPosition().y;
+	}
+	return 0;
+}
+
+float LLGSEngine::r_getscenenodeposz(void *nodeptr) {
+	if(nodeptr!=0) {
+		return ((Ogre::SceneNode *)nodeptr)->getPosition().z;
+	}
+	return 0;
+}
+
+void LLGSEngine::c_setcolobjpos(void *colobjptr, float x, float y, float z) {
+	auto co = static_cast<btCollisionObject *>(colobjptr);
+	btTransform t = co->getWorldTransform();
+	t.setOrigin(btVector3(x,y,z));
+	co->setWorldTransform(t);
+
+	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
+	if(gis) {
+//		Ogre::LogManager::getSingleton().logMessage("synccolobjtoscenenode: updating bounds");
+		gis->postUpdate();
+		gis->updateBound();
+	}
+}
+
+void *LLGSEngine::r_createbillboardset() {
+	if(scenemanager!=0) {
+		return scenemanager->createBillboardSet();
+	}
+	return 0;
+}
+
+void LLGSEngine::r_clearbillboardset(void *ptr) {
+	((Ogre::BillboardSet *)ptr)->clear();
+}
+
+void LLGSEngine::r_destroybillboardset(void *ptr) {
+	if(scenemanager!=0) {
+		scenemanager->destroyBillboardSet((Ogre::BillboardSet *)ptr);
+	}
+}
+
+void *LLGSEngine::r_createbillboard(void *owner, float x, float y, float z, float r, float g, float b) {
+	return ((Ogre::BillboardSet *)owner)->createBillboard(x,y,z,Ogre::ColourValue(r,g,b));
+}
+
+void LLGSEngine::r_removebillboard(void *setptr, void *billptr) {
+	((Ogre::BillboardSet *)setptr)->removeBillboard((Ogre::Billboard *)billptr);
+}
+
+void LLGSEngine::r_setbillboardmaterial(void *setptr, char *matname) {
+	((Ogre::BillboardSet *)setptr)->setMaterialName(matname);
+}
+
+void LLGSEngine::r_setbillboarddefdims(void *setptr, float w, float h) {
+	((Ogre::BillboardSet *)setptr)->setDefaultDimensions(w,h);
+}
+
+void LLGSEngine::r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z) {
+	if(setptr!=0) {
+		((Ogre::Billboard *)billprt)->setPosition(x,y,z);
+	}
 }

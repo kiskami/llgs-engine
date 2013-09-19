@@ -32,7 +32,7 @@ public:
 
 	void r_init(char *pluginsfile, char *configfile, char *logfile, char *rendersystem, char *resourcesfile);
 	void r_shutdown();
-	void r_createrenderwindow(char *title, int w, int h, bool fullscreen);
+	void r_createrenderwindow(char *title, int w, int h, int fullscreen);
 	void r_createscenemanager(char *type, char *name);
 
 	void *r_createcamera(char *name);
@@ -113,6 +113,10 @@ public:
 	void *r_getscenenodeuserobj(void *nodeptr, char *key);
 	void  r_delscenenodeuserobj(void *nodeptr, char *key);
 
+	float r_getscenenodeposx(void *nodeptr);
+	float r_getscenenodeposy(void *nodeptr);
+	float r_getscenenodeposz(void *nodeptr);
+
 	void *r_createpartsys(char *name, char *templ);
 	void  r_destroypartsys(void *partsysptr);
 	void  r_setpartsysemitting(void *partsysptr, bool emit);
@@ -130,23 +134,38 @@ public:
 	void  c_shutdown();
 	void  c_setdebugdrawmode(int mode);
 
-	void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask);
-	void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
-	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
-	void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask);
+	void *c_addsphere(float x, float y, float z, float radius, short mygrp, short grpmask);
+	void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
+	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
+	void *c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask);
 
 	void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
-	void c_setdynamic(void *colobjptr, int dynamic);
 	void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
+	void c_setcolobjpos(void *colobjptr, float x, float y, float z);
 
 	int c_collisiondetection();
 	void *c_getcollisionpairObjA(int index);
 	void *c_getcollisionpairObjB(int index);
 
+	float r_actfps();
+	float r_minfps();
+	float r_maxfps();
+	long r_trianglecount();
+	long r_batchcount();
+
+	void *r_createbillboardset();
+	void r_clearbillboardset(void *ptr);
+	void r_destroybillboardset(void *ptr);
+	void *r_createbillboard(void *owner, float x, float y, float z, float r, float g, float b);
+	void r_removebillboard(void *setptr, void *billptr);
+	void r_setbillboardmaterial(void *setptr, char *matname);
+	void r_setbillboarddefdims(void *setptr, float w, float h);
+	void r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z);
+
 private:
 
 	void locateResources(char *resources_cfg);
-	btCollisionObject *createCollisionObject(float x, float y, float z, float mass);
+	btCollisionObject *createCollisionObject(float x, float y, float z);
 
 	Ogre::Root *root;
 	Ogre::RenderWindow *window;

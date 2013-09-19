@@ -22,7 +22,7 @@ LLGSENGINE_API void  r_shutdown() {
 	engine.r_shutdown();
 }
 
-LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, bool fullscreen) {
+LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, int fullscreen) {
 	engine.r_createrenderwindow(title, w, h, fullscreen);
 }
 
@@ -298,16 +298,16 @@ LLGSENGINE_API void  c_setdebugdrawmode(int mode) {
 	engine.c_setdebugdrawmode(mode);
 }
 
-LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask) {
-	return engine.c_addsphere(x,y,z,radius,mass,mygrp,grpmask);
+LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, short mygrp, short grpmask) {
+	return engine.c_addsphere(x,y,z,radius,mygrp,grpmask);
 }
 
-LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
-	return engine.c_addbox(x,y,z,halfext1,halfext2,halfext3,mass,mygrp,grpmask);
+LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask) {
+	return engine.c_addbox(x,y,z,halfext1,halfext2,halfext3,mygrp,grpmask);
 }
 
-LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask) {
-	return engine.c_addcilinder(x,y,z,halfext1,halfext2,halfext3,mass,mygrp,grpmask);
+LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask) {
+	return engine.c_addcilinder(x,y,z,halfext1,halfext2,halfext3,mygrp,grpmask);
 }
 
 LLGSENGINE_API void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs) {
@@ -362,10 +362,75 @@ LLGSENGINE_API void  r_movecameraforward(void *camptr, float dist) {
 	engine.r_movecameraforward(camptr, dist);
 }
 
-LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask) {
-	return engine.c_addmeshgeom(x,y,z,entityptr,mass,mygrp,grpmask);
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask) {
+	return engine.c_addmeshgeom(x,y,z,entityptr,mygrp,grpmask);
 }
 
-LLGSENGINE_API void c_setdynamic(void *colobjptr, int dynamic) {
-	engine.c_setdynamic(colobjptr,dynamic);
+LLGSENGINE_API float r_actfps() {
+	return engine.r_actfps();
+}
+
+LLGSENGINE_API float r_minfps() {
+	return engine.r_minfps();
+}
+
+LLGSENGINE_API float r_maxfps() {
+	return engine.r_maxfps();
+}
+
+LLGSENGINE_API long r_trianglecount() {
+	return engine.r_trianglecount();
+}
+LLGSENGINE_API long r_batchcount() {
+	return engine.r_batchcount();
+}
+
+// -------------------------------
+// Billboardset api
+LLGSENGINE_API void *r_createbillboardset() {
+	return engine.r_createbillboardset();
+}
+
+LLGSENGINE_API void r_clearbillboardset(void *ptr) {
+	engine.r_clearbillboardset(ptr);
+}
+
+LLGSENGINE_API void r_destroybillboardset(void *ptr) {
+	engine.r_destroybillboardset(ptr);
+}
+
+LLGSENGINE_API void *r_createbillboard(void *owner, float x, float y, float z, float r, float g, float b) {
+	return engine.r_createbillboard(owner,x,y,z,r,g,b);
+}
+
+LLGSENGINE_API void r_removebillboard(void *setptr, void *billptr) {
+	engine.r_removebillboard(setptr,billptr);
+}
+
+LLGSENGINE_API void r_setbillboardmaterial(void *setptr, char *matname) {
+	engine.r_setbillboardmaterial(setptr,matname);
+}
+
+LLGSENGINE_API void r_setbillboarddefdims(void *setptr, float w, float h) {
+	engine.r_setbillboarddefdims(setptr,w,h);
+}
+
+LLGSENGINE_API void r_setbillboardpos(void *setptr, void *billptr, float x, float y, float z) {
+	engine.r_setbillboardpos(setptr,billptr,x,y,z);
+}
+
+LLGSENGINE_API float r_getscenenodeposx(void *nodeptr) {
+	return engine.r_getscenenodeposx(nodeptr);
+}
+
+LLGSENGINE_API float r_getscenenodeposy(void *nodeptr) {
+	return engine.r_getscenenodeposy(nodeptr);
+}
+
+LLGSENGINE_API float r_getscenenodeposz(void *nodeptr) {
+	return engine.r_getscenenodeposz(nodeptr);
+}
+
+LLGSENGINE_API void c_setcolobjpos(void *colobjptr, float x, float y, float z) {
+	return engine.c_setcolobjpos(colobjptr,x,y,z);
 }

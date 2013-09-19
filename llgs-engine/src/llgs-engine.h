@@ -17,7 +17,7 @@ extern "C" {
 // Renderer api
 LLGSENGINE_API void  r_init(char *pluginsfile, char *configfile, char *logfile, char *rendersystem, char *resourcesfile);
 LLGSENGINE_API void  r_shutdown();
-LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, bool fullscreen);
+LLGSENGINE_API void  r_createrenderwindow(char *title, int w, int h, int fullscreen);
 LLGSENGINE_API void  r_createscenemanager(char *type, char *name);
 
 LLGSENGINE_API void *r_createcamera(char *name);
@@ -43,6 +43,12 @@ LLGSENGINE_API void  r_renderoneframe();
 LLGSENGINE_API void  r_setskybox(char *materialname);
 
 LLGSENGINE_API void  r_screenshottofile(char *namebase);
+
+LLGSENGINE_API float r_actfps();
+LLGSENGINE_API float r_minfps();
+LLGSENGINE_API float r_maxfps();
+LLGSENGINE_API long r_trianglecount();
+LLGSENGINE_API long r_batchcount();
 
 // -------------------------------
 // Simple timer api
@@ -88,6 +94,20 @@ LLGSENGINE_API void  r_setscenenodeuserobj(void *nodeptr, char *key, void *obj);
 LLGSENGINE_API void *r_getscenenodeuserobj(void *nodeptr, char *key);
 LLGSENGINE_API void  r_delscenenodeuserobj(void *nodeptr, char *key);
 
+LLGSENGINE_API float r_getscenenodeposx(void *nodeptr);
+LLGSENGINE_API float r_getscenenodeposy(void *nodeptr);
+LLGSENGINE_API float r_getscenenodeposz(void *nodeptr);
+
+// -------------------------------
+// Billboardset api
+LLGSENGINE_API void *r_createbillboardset();
+LLGSENGINE_API void r_clearbillboardset(void *ptr);
+LLGSENGINE_API void r_destroybillboardset(void *ptr);
+LLGSENGINE_API void *r_createbillboard(void *owner, float x, float y, float z, float r, float g, float b);
+LLGSENGINE_API void r_removebillboard(void *setptr, void *billptr);
+LLGSENGINE_API void r_setbillboardmaterial(void *setptr, char *matname);
+LLGSENGINE_API void r_setbillboarddefdims(void *setptr, float w, float h);
+LLGSENGINE_API void r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z);
 
 // -------------------------------
 // Particle system api
@@ -138,14 +158,14 @@ LLGSENGINE_API void  c_init();
 LLGSENGINE_API void  c_shutdown();
 LLGSENGINE_API void  c_setdebugdrawmode(int mode);
 
-LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, float mass, short mygrp, short grpmask);
-LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
-LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, float mass, short mygrp, short grpmask);
-LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, float mass, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
+LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask);
 
 LLGSENGINE_API void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
-LLGSENGINE_API void c_setdynamic(void *colobjptr, int dynamic);
-LLGSENGINE_API void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
+LLGSENGINE_API void c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
+LLGSENGINE_API void c_setcolobjpos(void *colobjptr, float x, float y, float z);
 
 LLGSENGINE_API int c_collisiondetection();
 
