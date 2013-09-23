@@ -83,7 +83,7 @@ LLGSENGINE_API void  r_rotatescenenodez(void *nodeptr, float radian);
 LLGSENGINE_API void  r_attachmoveable(void *nodeptr, void *moveableptr);
 LLGSENGINE_API void  r_detachmoveable(void *nodeptr, void *moveableptr);
 
-LLGSENGINE_API void *r_createchildscenenode(void *nodeptr, char *name);
+LLGSENGINE_API void *r_createchildscenenode(void *nodeptr, char *name, int inheritori, int inheritscale);
 LLGSENGINE_API void *r_getparentscenenode(void *nodeptr);
 LLGSENGINE_API void r_addchild(void *nodeptr, void *childptr);
 LLGSENGINE_API void r_removechild(void *nodeptr, void *childptr);
@@ -98,6 +98,13 @@ LLGSENGINE_API float r_getscenenodeposx(void *nodeptr);
 LLGSENGINE_API float r_getscenenodeposy(void *nodeptr);
 LLGSENGINE_API float r_getscenenodeposz(void *nodeptr);
 
+LLGSENGINE_API float r_getscenenodeorix(void *nodeptr);
+LLGSENGINE_API float r_getscenenodeoriy(void *nodeptr);
+LLGSENGINE_API float r_getscenenodeoriz(void *nodeptr);
+LLGSENGINE_API float r_getscenenodeoriw(void *nodeptr);
+
+
+
 // -------------------------------
 // Billboardset api
 LLGSENGINE_API void *r_createbillboardset();
@@ -108,6 +115,11 @@ LLGSENGINE_API void r_removebillboard(void *setptr, void *billptr);
 LLGSENGINE_API void r_setbillboardmaterial(void *setptr, char *matname);
 LLGSENGINE_API void r_setbillboarddefdims(void *setptr, float w, float h);
 LLGSENGINE_API void r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z);
+LLGSENGINE_API void r_movebillboard(void *setptr, void *billprt, float x, float y, float z, float w, float dist);
+
+LLGSENGINE_API float r_getbillboardx(void *setptr, void *billprt);
+LLGSENGINE_API float r_getbillboardy(void *setptr, void *billprt);
+LLGSENGINE_API float r_getbillboardz(void *setptr, void *billprt);
 
 // -------------------------------
 // Particle system api
@@ -162,6 +174,8 @@ LLGSENGINE_API void *c_addsphere(float x, float y, float z, float radius, short 
 LLGSENGINE_API void *c_addbox(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
 LLGSENGINE_API void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
 LLGSENGINE_API void *c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask);
+
+LLGSENGINE_API void c_delcolobj(void *colobjptr);
 
 LLGSENGINE_API void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
 LLGSENGINE_API void c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);

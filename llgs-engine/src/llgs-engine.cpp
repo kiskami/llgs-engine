@@ -238,8 +238,8 @@ LLGSENGINE_API void  r_detachmoveable(void *nodeptr, void *moveableptr) {
 	engine.r_detachmoveable(nodeptr,moveableptr);
 }
 
-LLGSENGINE_API void *r_createchildscenenode(void *nodeptr, char *name) {
-	return engine.r_createchildscenenode(nodeptr, name);
+LLGSENGINE_API void *r_createchildscenenode(void *nodeptr, char *name, int inheritori, int inheritscale) {
+	return engine.r_createchildscenenode(nodeptr, name, inheritori, inheritscale);
 }
 
 LLGSENGINE_API void *r_getparentscenenode(void *nodeptr) {
@@ -433,4 +433,40 @@ LLGSENGINE_API float r_getscenenodeposz(void *nodeptr) {
 
 LLGSENGINE_API void c_setcolobjpos(void *colobjptr, float x, float y, float z) {
 	return engine.c_setcolobjpos(colobjptr,x,y,z);
+}
+
+LLGSENGINE_API void r_movebillboard(void *setptr, void *billprt, float x, float y, float z, float w, float dist) {
+	engine.r_movebillboard(setptr,billprt,x,y,z,w,dist);
+}
+
+LLGSENGINE_API float r_getscenenodeorix(void *nodeptr) {
+	return engine.r_getscenenodeorix(nodeptr);
+}
+
+LLGSENGINE_API float r_getscenenodeoriy(void *nodeptr) {
+	return engine.r_getscenenodeoriy(nodeptr);
+}
+
+LLGSENGINE_API float r_getscenenodeoriz(void *nodeptr) {
+	return engine.r_getscenenodeoriz(nodeptr);
+}
+
+LLGSENGINE_API float r_getscenenodeoriw(void *nodeptr) {
+	return engine.r_getscenenodeoriw(nodeptr);
+}
+
+LLGSENGINE_API float r_getbillboardx(void *setptr, void *billprt) {
+	return engine.r_getbillboardx(setptr,billprt);
+}
+
+LLGSENGINE_API float r_getbillboardy(void *setptr, void *billprt) {
+	return engine.r_getbillboardy(setptr,billprt);
+}
+
+LLGSENGINE_API float r_getbillboardz(void *setptr, void *billprt) {
+	return engine.r_getbillboardz(setptr,billprt);
+}
+
+LLGSENGINE_API void c_delcolobj(void *colobjptr) {
+	engine.c_delcolobj(colobjptr);
 }

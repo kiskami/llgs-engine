@@ -363,15 +363,15 @@ void  LLGSEngine::r_setscenenodescale(void *nodeptr, float xs, float ys, float z
 }
 
 void  LLGSEngine::r_rotatescenenodex(void *nodeptr, float radian) {
-	static_cast<Ogre::SceneNode *>(nodeptr)->pitch(Ogre::Radian(radian));
+	static_cast<Ogre::SceneNode *>(nodeptr)->rotate(Ogre::Quaternion(Ogre::Radian(radian),Ogre::Vector3::UNIT_X));
 }
 
 void  LLGSEngine::r_rotatescenenodey(void *nodeptr, float radian) {
-	static_cast<Ogre::SceneNode *>(nodeptr)->yaw(Ogre::Radian(radian));
+	static_cast<Ogre::SceneNode *>(nodeptr)->rotate(Ogre::Quaternion(Ogre::Radian(radian),Ogre::Vector3::UNIT_Y));
 }
 
 void  LLGSEngine::r_rotatescenenodez(void *nodeptr, float radian) {
-	static_cast<Ogre::SceneNode *>(nodeptr)->roll(Ogre::Radian(radian));
+	static_cast<Ogre::SceneNode *>(nodeptr)->rotate(Ogre::Quaternion(Ogre::Radian(radian),Ogre::Vector3::UNIT_Z));
 }
 
 void  LLGSEngine::r_attachmoveable(void *nodeptr, void *moveableptr) {
@@ -382,8 +382,11 @@ void  LLGSEngine::r_detachmoveable(void *nodeptr, void *moveableptr) {
 	static_cast<Ogre::SceneNode *>(nodeptr)->detachObject(static_cast<Ogre::MovableObject *>(moveableptr));
 }
 
-void *LLGSEngine::r_createchildscenenode(void *nodeptr, char *name) {
-	return static_cast<Ogre::SceneNode *>(nodeptr)->createChildSceneNode(name);
+void *LLGSEngine::r_createchildscenenode(void *nodeptr, char *name, int inheritori, int inheritscale) {
+	auto n = static_cast<Ogre::SceneNode *>(nodeptr)->createChildSceneNode(name);
+	n->setInheritOrientation(inheritori>0?true:false);
+	n->setInheritScale(inheritscale>0?true:false);
+	return n;
 }
 
 void *LLGSEngine::r_getparentscenenode(void *nodeptr) {
@@ -548,7 +551,7 @@ void *LLGSEngine::c_addbox(float x, float y, float z, float halfext1, float half
 		auto co = createCollisionObject(x,y,z);
 		co->setCollisionShape(cs);
 		collisionWorld->addCollisionObject(co,mygrp,grpmask);
-		return (void *)co;
+		return co;
 	}
 	return 0;
 }
@@ -564,13 +567,19 @@ void *LLGSEngine::c_addcilinder(float x, float y, float z, float halfext1, float
 	return 0;
 }
 
+btGImpactMeshShape *toGImpactMeshShape(btCollisionObject *obj) {
+	if(obj->getCollisionShape()->getShapeType() == GIMPACT_SHAPE_PROXYTYPE)
+			return (btGImpactMeshShape *)obj->getCollisionShape();
+	return 0;
+}
+
 void LLGSEngine::c_setlocalscaling(void *colobjptr, float xs, float ys, float zs) {
 	auto co = static_cast<btCollisionObject *>(colobjptr);
 	co->getCollisionShape()->setLocalScaling(btVector3(xs,ys,zs));
-	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
-	if(gis) {
+	btGImpactMeshShape *ms = toGImpactMeshShape(co);
+	if(ms) {
 //		Ogre::LogManager::getSingleton().logMessage("setlocalscaling: updating bounds");
-		gis->updateBound();
+		ms->updateBound();
 	}
 }
 
@@ -596,11 +605,11 @@ void  LLGSEngine::c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr) {
 	t.setRotation(btQuaternion(snq.x,snq.y,snq.z,snq.w));
 	co->setWorldTransform(t);
 
-	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
-	if(gis) {
+	btGImpactMeshShape *ms = toGImpactMeshShape(co);
+	if(ms) {
 //		Ogre::LogManager::getSingleton().logMessage("synccolobjtoscenenode: updating bounds");
-		gis->postUpdate();
-		gis->updateBound();
+		ms->postUpdate();
+		ms->updateBound();
 	}
 
 	checkCollisionShapeSize(co,sn->getName());
@@ -920,17 +929,22 @@ void LLGSEngine::c_setcolobjpos(void *colobjptr, float x, float y, float z) {
 	t.setOrigin(btVector3(x,y,z));
 	co->setWorldTransform(t);
 
-	auto gis = dynamic_cast<btGImpactMeshShape *>(co->getCollisionShape());
-	if(gis) {
+	btGImpactMeshShape *ms = toGImpactMeshShape(co);
+	if(ms) {
 //		Ogre::LogManager::getSingleton().logMessage("synccolobjtoscenenode: updating bounds");
-		gis->postUpdate();
-		gis->updateBound();
+		ms->postUpdate();
+		ms->updateBound();
 	}
 }
 
 void *LLGSEngine::r_createbillboardset() {
 	if(scenemanager!=0) {
-		return scenemanager->createBillboardSet();
+		auto res = scenemanager->createBillboardSet(64);
+//		res->setVisible(true);
+		res->setAutoextend(true);
+		res->setBillboardsInWorldSpace(true);
+		res->setAutoUpdate(true);
+		return res;
 	}
 	return 0;
 }
@@ -964,5 +978,61 @@ void LLGSEngine::r_setbillboarddefdims(void *setptr, float w, float h) {
 void LLGSEngine::r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z) {
 	if(setptr!=0) {
 		((Ogre::Billboard *)billprt)->setPosition(x,y,z);
+	}
+}
+
+void LLGSEngine::r_movebillboard(void *setptr, void *billprt, float x, float y, float z, float w, float dist) {
+	if(setptr!=0) {
+		Ogre::Billboard *b = (Ogre::Billboard *)billprt;
+		Ogre::Vector3 deltav = -Ogre::Quaternion(w,x,y,z).yAxis() * dist;
+		auto oripos = b->getPosition();
+//		Ogre::LogManager::getSingleton().stream() << "r_movebillboard oripos: (" << oripos.x << "," << oripos.y << "," << oripos.z << ")";
+//		Ogre::LogManager::getSingleton().stream() << "r_movebillboard deltav: (" << deltav.x << "," << deltav.y << "," << deltav.z << ")";
+		b->setPosition(oripos + deltav);
+//		oripos = b->getPosition();
+//		Ogre::LogManager::getSingleton().stream() << "r_movebillboard newpos: (" << oripos.x << "," << oripos.y << "," << oripos.z << ")";
+	}
+}
+
+float LLGSEngine::r_getscenenodeorix(void *nodeptr) {
+	return ((Ogre::SceneNode *)nodeptr)->getOrientation().x;
+}
+
+float LLGSEngine::r_getscenenodeoriy(void *nodeptr) {
+	return ((Ogre::SceneNode *)nodeptr)->getOrientation().y;
+}
+
+float LLGSEngine::r_getscenenodeoriz(void *nodeptr) {
+	return ((Ogre::SceneNode *)nodeptr)->getOrientation().z;
+}
+
+float LLGSEngine::r_getscenenodeoriw(void *nodeptr) {
+	return ((Ogre::SceneNode *)nodeptr)->getOrientation().w;
+}
+
+float LLGSEngine::r_getbillboardx(void *setptr, void *billprt) {
+	if(setptr!=0) {
+		return ((Ogre::Billboard *)billprt)->getPosition().x;
+	}
+	return 0;
+}
+
+float LLGSEngine::r_getbillboardy(void *setptr, void *billprt) {
+	if(setptr!=0) {
+		return ((Ogre::Billboard *)billprt)->getPosition().y;
+	}
+	return 0;
+}
+
+float LLGSEngine::r_getbillboardz(void *setptr, void *billprt) {
+	if(setptr!=0) {
+		return ((Ogre::Billboard *)billprt)->getPosition().z;
+	}
+	return 0;
+}
+
+void LLGSEngine::c_delcolobj(void *colobjptr) {
+	if(collisionWorld!=0) {
+		collisionWorld->removeCollisionObject((btCollisionObject *)colobjptr);
 	}
 }

@@ -102,7 +102,7 @@ public:
 	void  r_attachmoveable(void *nodeptr, void *moveableptr);
 	void  r_detachmoveable(void *nodeptr, void *moveableptr);
 
-	void *r_createchildscenenode(void *nodeptr, char *name);
+	void *r_createchildscenenode(void *nodeptr, char *name, int inheritori, int inheritscale);
 	void *r_getparentscenenode(void *nodeptr);
 	void r_addchild(void *nodeptr, void *childptr);
 	void r_removechild(void *nodeptr, void *childptr);
@@ -116,6 +116,11 @@ public:
 	float r_getscenenodeposx(void *nodeptr);
 	float r_getscenenodeposy(void *nodeptr);
 	float r_getscenenodeposz(void *nodeptr);
+
+	float r_getscenenodeorix(void *nodeptr);
+	float r_getscenenodeoriy(void *nodeptr);
+	float r_getscenenodeoriz(void *nodeptr);
+	float r_getscenenodeoriw(void *nodeptr);
 
 	void *r_createpartsys(char *name, char *templ);
 	void  r_destroypartsys(void *partsysptr);
@@ -139,6 +144,8 @@ public:
 	void *c_addcilinder(float x, float y, float z, float halfext1, float halfext2, float halfext3, short mygrp, short grpmask);
 	void *c_addmeshgeom(float x, float y, float z, void *entityptr, short mygrp, short grpmask);
 
+	void c_delcolobj(void *colobjptr);
+
 	void c_setlocalscaling(void *colobjptr, float xs, float ys, float zs);
 	void  c_synccolobjtoscenenode(void *colobjptr, void *scenenodeptr);
 	void c_setcolobjpos(void *colobjptr, float x, float y, float z);
@@ -161,6 +168,11 @@ public:
 	void r_setbillboardmaterial(void *setptr, char *matname);
 	void r_setbillboarddefdims(void *setptr, float w, float h);
 	void r_setbillboardpos(void *setptr, void *billprt, float x, float y, float z);
+	void r_movebillboard(void *setptr, void *billprt, float x, float y, float z, float w, float dist);
+
+	float r_getbillboardx(void *setptr, void *billprt);
+	float r_getbillboardy(void *setptr, void *billprt);
+	float r_getbillboardz(void *setptr, void *billprt);
 
 private:
 
