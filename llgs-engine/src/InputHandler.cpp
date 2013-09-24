@@ -23,6 +23,12 @@ InputHandler::InputHandler(Ogre::RenderWindow* mWindow_)
 	winHandleStr << winHandle;
 
 	pl.insert(std::make_pair("WINDOW", winHandleStr.str()));
+	
+	pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND" ));
+	pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
+
+	pl.insert(std::make_pair("w32_mouse", "DISCL_EXCLUSIVE"));
+	pl.insert(std::make_pair("w32_keyboard", "DISCL_EXCLUSIVE"));
 
 	mInputMgr = OIS::InputManager::createInputSystem(pl);
 
@@ -55,7 +61,7 @@ void InputHandler::windowResized(Ogre::RenderWindow* rw) {
 // window event callbacks
 
 void InputHandler::windowMoved(Ogre::RenderWindow* rw) {
-
+	Ogre::LogManager::getSingleton().logMessage("windowMoved");
 }
 
 bool InputHandler::windowClosing(Ogre::RenderWindow* rw) {
@@ -85,6 +91,7 @@ void InputHandler::shutdown() {
 }
 
 void InputHandler::windowFocusChange(Ogre::RenderWindow* rw) {
+		Ogre::LogManager::getSingleton().logMessage("windowFocusChange");
 }
 
 bool InputHandler::keyPressed(const OIS::KeyEvent& evt)	{

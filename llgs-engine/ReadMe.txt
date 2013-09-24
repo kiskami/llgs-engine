@@ -13,5 +13,7 @@ Components:
   - Ogre3D
 - Input
   - OpenInput
-- GUI
+- Collision detection
+  - Bullet
+- GUI (not yet)
   - CeGUI

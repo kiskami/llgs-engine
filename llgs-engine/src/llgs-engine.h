@@ -155,7 +155,7 @@ LLGSENGINE_API int   i_mouserely();
 
 // ----------------------------
 // simple text output functions
-LLGSENGINE_API void  *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h);
+LLGSENGINE_API void  *r_simpletextpanel(char *id, char *txt, char *fontname, float fontsize, float x, float y, float w, float h, int pixelmetrics);
 LLGSENGINE_API void  r_simpletextsetcolor(char *id, float r, float g, float b);
 LLGSENGINE_API void  r_simpletextshow(char *id);
 LLGSENGINE_API void  r_simpletexthide(char *id);

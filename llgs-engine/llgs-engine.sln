@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "llgs-engine", "llgs-engine.vcxproj", "{389EF3D8-3CFF-4BAF-8DEE-F9687190B32D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpletextpaneltest", "simpletextpaneltest\simpletextpaneltest.vcxproj", "{7D6D21FC-A916-4FA1-A7CF-25508AB4ED77}"
+	ProjectSection(ProjectDependencies) = postProject
+		{389EF3D8-3CFF-4BAF-8DEE-F9687190B32D} = {389EF3D8-3CFF-4BAF-8DEE-F9687190B32D}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +18,10 @@ Global
 		{389EF3D8-3CFF-4BAF-8DEE-F9687190B32D}.Debug|Win32.Build.0 = Debug|Win32
 		{389EF3D8-3CFF-4BAF-8DEE-F9687190B32D}.Release|Win32.ActiveCfg = Release|Win32
 		{389EF3D8-3CFF-4BAF-8DEE-F9687190B32D}.Release|Win32.Build.0 = Release|Win32
+		{7D6D21FC-A916-4FA1-A7CF-25508AB4ED77}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7D6D21FC-A916-4FA1-A7CF-25508AB4ED77}.Debug|Win32.Build.0 = Debug|Win32
+		{7D6D21FC-A916-4FA1-A7CF-25508AB4ED77}.Release|Win32.ActiveCfg = Release|Win32
+		{7D6D21FC-A916-4FA1-A7CF-25508AB4ED77}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -157,8 +157,8 @@ LLGSENGINE_API int   i_mouserely() {
 }
 
 // simple text output functions
-LLGSENGINE_API void *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h) {
-	return engine.r_simpletextpanel(id,txt,fontname,fontsize,x,y,w,h);
+LLGSENGINE_API void *r_simpletextpanel(char *id, char *txt, char *fontname, float fontsize, float x, float y, float w, float h, int pixelmetrics) {
+	return engine.r_simpletextpanel(id,txt,fontname,fontsize,x,y,w,h,pixelmetrics);
 }
 
 LLGSENGINE_API void  r_simpletextsetcolor(char *id, float r, float g, float b) {

@@ -68,11 +68,10 @@ void LLGSEngine::r_createscenemanager(char *type, char *name) {
 
 		st_overlay = Ogre::OverlayManager::getSingleton().create("st_overlay");
 		st_panel = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "st_container"));
-		st_panel->setDimensions(1, 1);
 		st_panel->setPosition(0, 0);
+		st_panel->setDimensions(1, 1);
 		st_overlay->add2D(st_panel);
-//		st_overlay->show();
-		st_panel->show();
+		st_overlay->show();
 	}
 }
 
@@ -216,6 +215,7 @@ void  LLGSEngine::i_shutdown() {
 }
 
 void  LLGSEngine::i_captureinput() {
+	Ogre::WindowEventUtilities::messagePump();
 	if(inputhandler!=0)
 		inputhandler->i_captureinput();
 }
@@ -272,19 +272,16 @@ int   LLGSEngine::i_mouserely() {
 	return 0;
 }
 
-void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h) {
+void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, float fontsize, float x, float y, float w, float h, int pixelmetrics) {
 	if(st_overlay!=0) {
 		Ogre::OverlayElement* textBox = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea",id);
-		textBox->setMetricsMode(Ogre::GuiMetricsMode::GMM_PIXELS);
-	    textBox->setDimensions(w, h);
+		if(pixelmetrics>0) textBox->setMetricsMode(Ogre::GuiMetricsMode::GMM_PIXELS);
 		textBox->setPosition(x, y);
+	    textBox->setDimensions(w, h);
 		textBox->setParameter("font_name", fontname);
-		textBox->setParameter("char_height", ""+fontsize);
+		textBox->setParameter("char_height", Ogre::StringConverter::toString(fontsize));
 		textBox->setColour(Ogre::ColourValue::White);
- 
 	    textBox->setCaption(txt);
-		textBox->setEnabled(true);
- 
 	    st_panel->addChild(textBox);
 		return textBox;
 	}
@@ -311,6 +308,7 @@ void  LLGSEngine::r_simpletexthide(char *id) {
 
 void  LLGSEngine::r_simpletextsettext(char *id, char *txt) {
 	auto e = Ogre::OverlayManager::getSingleton().getOverlayElement(id);
+	assert(e);
 	e->setCaption(txt);
 }
 
@@ -944,6 +942,7 @@ void *LLGSEngine::r_createbillboardset() {
 		res->setAutoextend(true);
 		res->setBillboardsInWorldSpace(true);
 		res->setAutoUpdate(true);
+		res->setCullIndividually(true);
 		return res;
 	}
 	return 0;

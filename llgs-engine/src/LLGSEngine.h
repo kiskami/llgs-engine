@@ -75,7 +75,7 @@ public:
 	int   i_mouserelx();
 	int   i_mouserely();
 
-	void *r_simpletextpanel(char *id, char *txt, char *fontname, int fontsize, float x, float y, float w, float h);
+	void *r_simpletextpanel(char *id, char *txt, char *fontname, float fontsize, float x, float y, float w, float h, int pixelmetrics);
 	void  r_simpletextsetcolor(char *id, float r, float g, float b);
 	void  r_simpletextshow(char *id);
 	void  r_simpletexthide(char *id);
