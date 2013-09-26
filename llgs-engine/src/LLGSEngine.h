@@ -81,6 +81,8 @@ public:
 	void  r_simpletexthide(char *id);
 	void  r_simpletextsettext(char *id, char *txt);
 
+	void  *r_simpleimagepanel(char *id, char *matname, float x, float y, float w, float h, int pixelmetrics);
+
 	void *r_loadmesh(char *name, char *meshname);
 	void  r_destroymesh(void *entityptr);
 
@@ -174,10 +176,19 @@ public:
 	float r_getbillboardy(void *setptr, void *billprt);
 	float r_getbillboardz(void *setptr, void *billprt);
 
+	void r_setbillboardsetstacksandslices(void *setptr, unsigned char stacks, unsigned char slices);
+	void r_setbillboardtextcoodrdindex(void *setptr, void *billprt, unsigned short index);
+
+	void r_updatebillboardbounds(void *setptr);
+
+	void r_setbillboarddims(void *setptr, void *billprt, float w, float h);
+
 private:
 
 	void locateResources(char *resources_cfg);
 	btCollisionObject *createCollisionObject(float x, float y, float z);
+
+	Ogre::OverlayElement* createOverlayElement(char *id, char *type, float x, float y, float w, float h, int pixelmetrics);
 
 	Ogre::Root *root;
 	Ogre::RenderWindow *window;

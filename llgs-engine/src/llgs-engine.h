@@ -121,6 +121,13 @@ LLGSENGINE_API float r_getbillboardx(void *setptr, void *billprt);
 LLGSENGINE_API float r_getbillboardy(void *setptr, void *billprt);
 LLGSENGINE_API float r_getbillboardz(void *setptr, void *billprt);
 
+LLGSENGINE_API void r_setbillboardsetstacksandslices(void *setptr, unsigned char stacks, unsigned char slices);
+LLGSENGINE_API void r_setbillboardtextcoodrdindex(void *setptr, void *billprt, unsigned short index);
+
+LLGSENGINE_API void r_updatebillboardbounds(void *setptr);
+
+LLGSENGINE_API void r_setbillboarddims(void *setptr, void *billprt, float w, float h);
+
 // -------------------------------
 // Particle system api
 LLGSENGINE_API void *r_createpartsys(char *name, char *templ);
@@ -160,6 +167,8 @@ LLGSENGINE_API void  r_simpletextsetcolor(char *id, float r, float g, float b);
 LLGSENGINE_API void  r_simpletextshow(char *id);
 LLGSENGINE_API void  r_simpletexthide(char *id);
 LLGSENGINE_API void  r_simpletextsettext(char *id, char *txt);
+
+LLGSENGINE_API void  *r_simpleimagepanel(char *id, char *matname, float x, float y, float w, float h, int pixelmetrics);
 
 // -------------------------------
 // (CE)GUI api

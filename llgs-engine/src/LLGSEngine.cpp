@@ -272,18 +272,28 @@ int   LLGSEngine::i_mouserely() {
 	return 0;
 }
 
+Ogre::OverlayElement* LLGSEngine::createOverlayElement(char *id, char *type, float x, float y, float w, float h, int pixelmetrics) {
+	if(st_overlay!=0) {
+		Ogre::OverlayElement* oe = Ogre::OverlayManager::getSingleton().createOverlayElement(type,id);
+		if(pixelmetrics>0) oe->setMetricsMode(Ogre::GuiMetricsMode::GMM_PIXELS);
+		oe->setPosition(x, y);
+	    oe->setDimensions(w, h);
+		oe->setColour(Ogre::ColourValue::White);
+		return oe;
+	}
+	return 0;
+}
+
 void  *LLGSEngine::r_simpletextpanel(char *id, char *txt, char *fontname, float fontsize, float x, float y, float w, float h, int pixelmetrics) {
 	if(st_overlay!=0) {
-		Ogre::OverlayElement* textBox = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea",id);
-		if(pixelmetrics>0) textBox->setMetricsMode(Ogre::GuiMetricsMode::GMM_PIXELS);
-		textBox->setPosition(x, y);
-	    textBox->setDimensions(w, h);
-		textBox->setParameter("font_name", fontname);
-		textBox->setParameter("char_height", Ogre::StringConverter::toString(fontsize));
-		textBox->setColour(Ogre::ColourValue::White);
-	    textBox->setCaption(txt);
-	    st_panel->addChild(textBox);
-		return textBox;
+		auto textBox = createOverlayElement(id,"TextArea",x,y,w,h,pixelmetrics);
+		if(textBox) {
+			textBox->setParameter("font_name", fontname);
+			textBox->setParameter("char_height", Ogre::StringConverter::toString(fontsize));
+			textBox->setCaption(txt);
+			st_panel->addChild(textBox);
+			return textBox;
+		}
 	}
 	return 0;
 }
@@ -1033,5 +1043,41 @@ float LLGSEngine::r_getbillboardz(void *setptr, void *billprt) {
 void LLGSEngine::c_delcolobj(void *colobjptr) {
 	if(collisionWorld!=0) {
 		collisionWorld->removeCollisionObject((btCollisionObject *)colobjptr);
+	}
+}
+
+void  *LLGSEngine::r_simpleimagepanel(char *id, char *matname, float x, float y, float w, float h, int pixelmetrics) {
+		if(st_overlay!=0) {
+		auto oe = createOverlayElement(id,"Panel",x,y,w,h,pixelmetrics);
+		if(oe) {
+			oe->setMaterialName(matname);
+			st_panel->addChild(oe);
+			return oe;
+		}
+	}
+	return 0;
+}
+
+void LLGSEngine::r_setbillboardsetstacksandslices(void *setptr, unsigned char stacks, unsigned char slices) {
+	if(setptr!=0) {
+		((Ogre::BillboardSet *)setptr)->setTextureStacksAndSlices(stacks, slices);
+	}
+}
+
+void LLGSEngine::r_setbillboardtextcoodrdindex(void *setptr, void *billprt, unsigned short index) {
+	if(setptr!=0) {
+		((Ogre::Billboard *)billprt)->setTexcoordIndex(index);
+	}
+}
+
+void LLGSEngine::r_updatebillboardbounds(void *setptr) {
+	if(setptr!=0) {
+		((Ogre::BillboardSet *)setptr)->_updateBounds();
+	}
+}
+
+void LLGSEngine::r_setbillboarddims(void *setptr, void *billprt, float w, float h) {
+	if(setptr!=0) {
+		((Ogre::Billboard *)billprt)->setDimensions(w,h);
 	}
 }

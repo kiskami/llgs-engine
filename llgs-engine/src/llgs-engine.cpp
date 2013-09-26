@@ -470,3 +470,23 @@ LLGSENGINE_API float r_getbillboardz(void *setptr, void *billprt) {
 LLGSENGINE_API void c_delcolobj(void *colobjptr) {
 	engine.c_delcolobj(colobjptr);
 }
+
+LLGSENGINE_API void  *r_simpleimagepanel(char *id, char *matname, float x, float y, float w, float h, int pixelmetrics) {
+	return engine.r_simpleimagepanel(id,matname,x,y,w,h,pixelmetrics);
+}
+
+LLGSENGINE_API void r_setbillboardsetstacksandslices(void *setptr, unsigned char stacks, unsigned char slices) {
+	engine.r_setbillboardsetstacksandslices(setptr,stacks,slices);
+}
+
+LLGSENGINE_API void r_setbillboardtextcoodrdindex(void *setptr, void *billprt, unsigned short index) {
+	engine.r_setbillboardtextcoodrdindex(setptr,billprt,index);
+}
+
+LLGSENGINE_API void r_updatebillboardbounds(void *setptr) {
+	engine.r_updatebillboardbounds(setptr);
+}
+
+LLGSENGINE_API void r_setbillboarddims(void *setptr, void *billprt, float w, float h) {
+	engine.r_setbillboarddims(setptr,billprt,w,h);
+}
