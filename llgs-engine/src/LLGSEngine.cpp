@@ -1081,3 +1081,10 @@ void LLGSEngine::r_setbillboarddims(void *setptr, void *billprt, float w, float 
 		((Ogre::Billboard *)billprt)->setDimensions(w,h);
 	}
 }
+
+int LLGSEngine::i_anykeypressed() {
+	if(inputhandler!=0) {
+		return inputhandler->i_anykeypressed();
+	}
+	return 0;
+}

@@ -66,6 +66,7 @@ public:
 	void  i_shutdown();
 	void  i_captureinput();
 	int  i_keypressed(int key);
+	int  i_anykeypressed();
 	void  i_guiinput(bool enable);
 	int  i_leftmouse();
 	int  i_middlemouse();

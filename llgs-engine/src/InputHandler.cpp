@@ -139,6 +139,13 @@ int InputHandler::i_keypressed(int key) {
 	return keys[key]?1:0;
 }
 
+int  InputHandler::i_anykeypressed() {
+	for(auto i = 0; i < MAX_KEYS; ++i) {
+		if(keys[i]) return 1;
+	}
+	return 0;
+}
+
 int  InputHandler::i_leftmouse() {
 	return mousebuttons[OIS::MB_Left]?1:0;
 }

@@ -490,3 +490,7 @@ LLGSENGINE_API void r_updatebillboardbounds(void *setptr) {
 LLGSENGINE_API void r_setbillboarddims(void *setptr, void *billprt, float w, float h) {
 	engine.r_setbillboarddims(setptr,billprt,w,h);
 }
+
+LLGSENGINE_API int  i_anykeypressed() {
+	return engine.i_anykeypressed();
+}

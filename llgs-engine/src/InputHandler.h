@@ -30,6 +30,7 @@ public:
 	void i_captureinput();
 
 	int i_keypressed(int key);
+	int i_anykeypressed();
 
 	int  i_leftmouse();
 	int  i_middlemouse();

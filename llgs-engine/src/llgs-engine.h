@@ -151,6 +151,7 @@ LLGSENGINE_API void  i_init();
 LLGSENGINE_API void  i_shutdown();
 LLGSENGINE_API void  i_captureinput();
 LLGSENGINE_API int  i_keypressed(int key);
+LLGSENGINE_API int  i_anykeypressed();
 LLGSENGINE_API void  i_guiinput(bool enable);
 LLGSENGINE_API int  i_leftmouse();
 LLGSENGINE_API int  i_middlemouse();
